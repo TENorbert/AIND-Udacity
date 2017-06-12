@@ -1,8 +1,14 @@
 from operator import itemgetter
 from itertools import groupby
 
-assignments = []
 
+
+
+##########################################################################################
+# 
+#  Functions Defination Begins!!
+#
+##########################################################################################
 
 def assign_value(values, box, value):
     """
@@ -12,10 +18,13 @@ def assign_value(values, box, value):
 
     # Don't waste memory appending actions that don't actually change any values
     if values[box] == value:
+
         return values
 
     values[box] = value
+
     if len(value) == 1:
+
         assignments.append(values.copy())
     return values
 
@@ -26,7 +35,9 @@ def update_grid(grid, value):
      update box values of '.' with '123456789'
     """
     for l in grid.keys():
+
         if grid[l] == '.':
+
             grid[l] = value
 
     return grid
@@ -62,7 +73,7 @@ def display(values):
     #pass
 
 
-
+'''
 def grid_diagonal(a, b):
     """
       creates a list of boxes in the diagonal
@@ -74,12 +85,17 @@ def grid_diagonal(a, b):
     dg = []
 
     if len(a) == len(b):
+
         for l in range(0, len(a)):
+
             dg.append(a[l] + b[l])
 
     if len(dg) != 0:
+
         return dg
+
     else:
+
         print("\tError, Empty\n")
 
 
@@ -89,91 +105,8 @@ def reverse_string(s):
 
     """
     return "".join(s[i] for i in range(len(s) - 1, -1, -1))
+'''
 
-
-
-rows = 'ABCDEFGHI'
-cols = '123456789'
-
-boxes = cross(rows, cols)
-
-row_units = [cross(r, cols) for r in rows]
-column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-
-## Create Diagonal units
-rev_cols = reverse_string(cols)
-diag1_units = [[rows[i] + cols[i] for i in range(len(rows))]]
-diag2_units = [[rows[i] + rev_cols[i] for i in range(len(rows))]]
-
-#diag_units = diag1_units + diag2_units
-
-diag_units = [grid_diagonal(rows, cols)] + [grid_diagonal(rows,  reverse_string(cols))]
-
-#Choose If diagonal Sudoku or Traditional Sudoku
-diagonal_sudoku = False  ## Final solution is a diagonal sudoku so default is True
-
-if diagonal_sudoku:
-    
-    unitlist = row_units + column_units + square_units + diag_units
-    
-else:
-    unitlist = row_units + column_units + square_units
-
-
-units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
-
-
-
-
-def grid_as_dict(l,s):
-    """
-    Generates dictionary of sudoku board game{<box>:<value>} 
-    from input boxes and sudoku values given as string
-    Inputs:
-        l: Boxes as list
-        s: Values as string
-    Returns:
-        grid: as dictionary
-
-    """
-    rgrid = {}
-
-    temp = zip(l,s)
-    for i, j in temp:
-        rgrid[i] = j
-    return rgrid
-
-
-def grid_values2(grid):
-    """
-    Convert grid into a dict of {square: char} with '123456789' for empties.
-    Args:
-        grid(string) - A grid in string form.
-    Returns:
-        A grid in dictionary form
-            Keys: The boxes, e.g., 'A1'
-            Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
-    """
-
-    return grid_as_dict(boxes, grid)
-    #pass
-    
-"""
-def grid_values(grid):
-    chars = []
-    digits = '123456789'
-    for c in grid:
-        if c in digits:
-            chars.append(c)
-        if c == '.':
-            chars.append(digits)
-    assert len(chars) == 81
-    return dict(zip(boxes, chars))
-    
-    #pass
-"""
 
 
 
@@ -196,35 +129,36 @@ def grid_values(from_string=None, from_dict=None):
     """
     
     if from_string is not None:
+
         assert(isinstance(from_string, str))
+
         assert(from_dict is None)
+
         assert (len(from_string) == 81)
+
         grid = dict(zip(boxes, list(from_string)))
 
+
     if from_dict is not None:
+
         assert(isinstance(from_dict, dict))
+
         assert(from_string is None)
+
         assert (len(from_dict) == 81)
+
         grid = from_dict.copy()
 
     for box in boxes:
+
         if grid[box] == '.':
+
             grid[box] = '123456789'
 
     return grid 
  
 
-      
-    
 
-
-
-def single_digit(grid):
-    
-    """
-    Get  grid keys with single value
-    """
-    return [val for val in grid.keys() if len(grid[val]) == 1]
 
 
 
@@ -251,10 +185,15 @@ def eliminate(values):
 
     #Now remove  single digit box value from peers
     for box in one_digits:
+
         digit = values[box]
+
         for peer in peers[box]:
+
             #values[peer] = values[peer].replace(digit,'')
-            assign_value(values, peer, values[peer].replace(digit, ''))
+
+            ## Assign values before return
+            values = assign_value(values, peer, values[peer].replace(digit, ''))
     
     return values
 
@@ -263,7 +202,7 @@ def eliminate(values):
 
 
 ## Only Choice Strategy Method
-def only_choice(grid):
+def only_choice(values):
     """
     Go through all the units, and whenever there is a unit with a value
     that only fits in one box, assign the value to this box.
@@ -272,12 +211,20 @@ def only_choice(grid):
     Output: Resulting Sudoku in dictionary form after filling in only choices.
     """
     for unit in unitlist:
-        for val in '123456789':
-            unitvalue = [box for box in unit if val in grid[box]]
-            if len(unitvalue) == 1:
-                grid[unitvalue[0]] = val
 
-    return grid
+        for val in '123456789':
+
+            unitboxes = [box for box in unit if val in values[box]]
+
+            if len(unitboxes) == 1:
+
+                for ubox in unitboxes:
+
+                    values = assign_value(values, ubox, val)
+                    ##values[unitboxes[0]] = val
+
+                
+    return values
 
 
 '''
@@ -331,18 +278,30 @@ def naked_twins(values):
     '''
 
     for unit in unitlist:
+
         candidates = [(box, values[box]) for box in unit if len(values[box]) == 2]
+
         if len(candidates) >= 2:
+
             sorted_candidates = sorted(candidates, key=itemgetter(1))
+
             paired_candidates = groupby(sorted_candidates, key=itemgetter(1))
+
             for digits, candidates in paired_candidates:
+
                 boxes = [candidate[0] for candidate in candidates]
+
                 if len(boxes) == 2:
+
                     for box in unit:
+
                         if box not in boxes:
+
                             for digit in digits:
+
                                 if digit in values[box] and len(values[box]) > 1:
-                                    assign_value(values, box, values[box].replace(digit, ''))
+
+                                    values = assign_value(values, box, values[box].replace(digit, ''))
                                     # values[box] = values[box].replace(digit, '')
 
     return values
@@ -369,16 +328,21 @@ def reduce_puzzle(values, eliminate_strategy=True, only_choice_strategy=True, na
     stalled = False
     
     while not stalled:
+
         # Check how many boxes have a determined value
+
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         
         if eliminate_strategy == True:
+
             # Use the Eliminate Strategy
             values = eliminate(values)
+
         if only_choice_strategy == True:
             
             # Use the Only Choice Strategy
             values = only_choice(values)
+
         if naked_twin_strategy == True:
             
             # use naked Twins strategy( for naked twin problems)
@@ -386,11 +350,15 @@ def reduce_puzzle(values, eliminate_strategy=True, only_choice_strategy=True, na
             
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+
         # If no new values were added, stop the loop.
         stalled = solved_values_before == solved_values_after
+
         # Sanity check, return False if there is a box with zero available values:
         if len([box for box in values.keys() if len(values[box]) == 0]):
+
             return False
+
     return values
 
     #pass
@@ -405,18 +373,27 @@ def search(values):
     values = reduce_puzzle(values)
     
     if values is False:
+
         return False ## Failed earlier
+
     if all(len(values[s]) == 1 for s in boxes):
+
         return values ## Solved!
+
     # Choose one of the unfilled squares with the fewest possibilities
     n,s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
 
     # Now use recurrence to solve each one of the resulting sudokus, and
     for value in values[s]:
+
         new_sudoku = values.copy()
+
         new_sudoku[s] = value
+
         attempt = search(new_sudoku)
+
         if attempt:
+
             return attempt
 
 
@@ -456,6 +433,64 @@ def solve(grid, puzzle_as_string=True):
 
 
 
+########################################################################################
+##
+##  Variables/Data Structures
+##
+########################################################################################
+
+assignments = []
+
+
+rows = 'ABCDEFGHI'
+
+cols = '123456789'
+
+boxes = cross(rows, cols)
+
+row_units = [cross(r, cols) for r in rows]
+
+column_units = [cross(rows, c) for c in cols]
+
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+
+## Create Diagonal units
+
+main_diagonal_units = [[rows[i] + cols[i] for i in range(len(rows))]]
+
+off_diagonal_units = [[rows[i] + cols[::-1][i] for i in range(len(rows))]]  
+
+#rev_cols = reverse_string(cols)
+#diag2_units = [[rows[i] + rev_cols[i] for i in range(len(rows))]]
+#diag_units = diag1_units + diag2_units
+#diag_units = [grid_diagonal(rows, cols)] + [grid_diagonal(rows,  reverse_string(cols))]
+
+diagonal_units = main_diagonal_units  +  off_diagonal_units
+
+#Choose If diagonal Sudoku or Traditional Sudoku
+diagonal_sudoku = True  ## Final solution is a diagonal sudoku so default is True
+
+if diagonal_sudoku:
+    
+    unitlist = row_units + column_units + square_units + diagonal_units
+    
+else:
+    unitlist = row_units + column_units + square_units
+
+
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
+
+
+
+
+########################################################################################
+##
+##  Main Begins
+##
+########################################################################################
 
 if __name__ == '__main__':
     
@@ -470,27 +505,30 @@ if __name__ == '__main__':
     
     
     sudoku_grid = {"G7": "2345678", "G6": "1236789", "G5": "23456789", "G4": "345678",
-"G3": "1234569", "G2": "12345678", "G1": "23456789", "G9": "24578",
-"G8": "345678", "C9": "124578", "C8": "3456789", "C3": "1234569",
-"C2": "1234568", "C1": "2345689", "C7": "2345678", "C6": "236789",
-"C5": "23456789", "C4": "345678", "E5": "678", "E4": "2", "F1": "1",
-"F2": "24", "F3": "24", "F4": "9", "F5": "37", "F6": "37", "F7": "58",
-"F8": "58", "F9": "6", "B4": "345678", "B5": "23456789", "B6":
-"236789", "B7": "2345678", "B1": "2345689", "B2": "1234568", "B3":
-"1234569", "B8": "3456789", "B9": "124578", "I9": "9", "I8": "345678",
-"I1": "2345678", "I3": "23456", "I2": "2345678", "I5": "2345678",
-"I4": "345678", "I7": "1", "I6": "23678", "A1": "2345689", "A3": "7",
-"A2": "234568", "E9": "3", "A4": "34568", "A7": "234568", "A6":
-"23689", "A9": "2458", "A8": "345689", "E7": "9", "E6": "4", "E1":
-"567", "E3": "56", "E2": "567", "E8": "1", "A5": "1", "H8": "345678",
-"H9": "24578", "H2": "12345678", "H3": "1234569", "H1": "23456789",
-"H6": "1236789", "H7": "2345678", "H4": "345678", "H5": "23456789",
-"D8": "2", "D9": "47", "D6": "5", "D7": "47", "D4": "1", "D5": "36",
-"D2": "9", "D3": "8", "D1": "36"}
+                    "G3": "1234569", "G2": "12345678", "G1": "23456789", "G9": "24578",
+                    "G8": "345678", "C9": "124578", "C8": "3456789", "C3": "1234569",
+                    "C2": "1234568", "C1": "2345689", "C7": "2345678", "C6": "236789",
+                    "C5": "23456789", "C4": "345678", "E5": "678", "E4": "2", "F1": "1",
+                    "F2": "24", "F3": "24", "F4": "9", "F5": "37", "F6": "37", "F7": "58",
+                    "F8": "58", "F9": "6", "B4": "345678", "B5": "23456789", "B6":
+                    "236789", "B7": "2345678", "B1": "2345689", "B2": "1234568", "B3":
+                    "1234569", "B8": "3456789", "B9": "124578", "I9": "9", "I8": "345678",
+                    "I1": "2345678", "I3": "23456", "I2": "2345678", "I5": "2345678",
+                    "I4": "345678", "I7": "1", "I6": "23678", "A1": "2345689", "A3": "7",
+                    "A2": "234568", "E9": "3", "A4": "34568", "A7": "234568", "A6":
+                    "23689", "A9": "2458", "A8": "345689", "E7": "9", "E6": "4", "E1":
+                    "567", "E3": "56", "E2": "567", "E8": "1", "A5": "1", "H8": "345678",
+                    "H9": "24578", "H2": "12345678", "H3": "1234569", "H1": "23456789",
+                    "H6": "1236789", "H7": "2345678", "H4": "345678", "H5": "23456789",
+                    "D8": "2", "D9": "47", "D6": "5", "D7": "47", "D4": "1", "D5": "36",
+                    "D2": "9", "D3": "8", "D1": "36"
+                  }
+
+
 
     sudoku_values = [];  # final results of the sudoku
     
-    string_input_format = False;  ## default puzzle too solve is as a string, see solution_test.py
+    string_input_format = True;  ## default puzzle too solve is as a string, see solution_test.py
     
     if  string_input_format:
         
@@ -528,9 +566,13 @@ if __name__ == '__main__':
     ## Visualise sudoku
     try:
         from visualize import visualize_assignments
+
         visualize_assignments(assignments)
 
     except SystemExit:
+
         pass
+
     except:
+
         print('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')
