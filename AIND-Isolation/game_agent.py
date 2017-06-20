@@ -307,8 +307,6 @@ class MinimaxPlayer(IsolationPlayer):
 
         if depth == 1:
             
-            depth -= 1
-            
             if maximizing_player == True:
                 
                 for move in legal_moves:
@@ -335,9 +333,7 @@ class MinimaxPlayer(IsolationPlayer):
                 #return max([(self.min_value(game, game.forecast_move(move)), move) for move in legal_moves])
 
             else:
-                
-                depth -= 1
-                
+                           
                 for move in legal_moves:
                     
                     #temp_score = min(best_min_score,self.max_value(game,game.forecast_move(move)))
@@ -367,12 +363,12 @@ class MinimaxPlayer(IsolationPlayer):
         # so we recursively call the maximum algorithm
         if maximizing_player == True:
             
-            depth -= 1
+            #depth -= 1
             
             for move in legal_moves:
                 
-                #temp_score = self.score(self.minimax(game, depth-1, maximizing_player = False), self)
-                temp_score = self.min_value(game, game.forecast_move(move))
+                temp_score = self.score(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False), self)
+                #temp_score = self.min_value(game, game.forecast_move(move))
                 
                 # If we are lucky enough to find the winning score right away then end the damn for-loop
                 if temp_score == float('inf'):
@@ -390,12 +386,12 @@ class MinimaxPlayer(IsolationPlayer):
             
         else: ## Handle Minimmizing player
           
-            depth -= 1
+            #depth -= 1
             
             for move in legal_moves:
                 
-                #temp_score = self.score(self.minimax(game, depth-1, maximizing_player = True), self)
-                temp_score = self.max_value(game,game.forecast_move(move))
+                temp_score = self.score(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True), self)
+                #temp_score = self.max_value(game,game.forecast_move(move))
     
                 # If we are lucky enough to find the winning score right away then end the damn for-loop
                 if temp_score == float('-inf'):
@@ -564,7 +560,7 @@ class AlphaBetaPlayer(IsolationPlayer):
     make sure it returns a good move before the search time limit expires.
     """
 
-    def get_move(self, game, time_left):
+    def get_move(self, game, time_left, iterative_deepening_search = True):
         """Search for the best move from the available legal moves and return a
         result before the time limit expires.
 
@@ -594,12 +590,20 @@ class AlphaBetaPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
+
+
         self.time_left = time_left
         
         if self.time_left() < self.TIMER_THRESHOLD:
 
-            #return best_move_this_far
-            raise SearchTimeout()
+            legal_player_moves = self.get_legal_moves()
+            game_copy = self.copy()
+
+            best_move = self._active_player.get_move(game_copy, time_left)
+
+            return best_move
+
+            #raise SearchTimeout()
 
 
         legal_moves = game.get_legal_moves()
@@ -619,14 +623,29 @@ class AlphaBetaPlayer(IsolationPlayer):
         # TODO: finish this function!
         #raise NotImplementedError
         # Initialised best move so far
-        best_move_this_far = (-1, -1)
+        best_move = (-1, -1)
+
+        best_score = float('inf')
+
+
         
         ## TO DO
         # How to handle Iterative search Vs Non-Iterative Search
         
         try:
-            
-            return self.alphabeta(game, self.search_depth)
+            if iterative_deepening_search == True:
+
+                iterative_search_depth = 1
+
+                while True:
+
+                    best_move  = self.alphabeta(game, iterative_search_depth)
+
+                    iterative_search_depth += 1
+            else:
+
+                best_move = self.alphabeta(game, self.search_depth)
+
             
         except SearchTimeout:
             
@@ -635,7 +654,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             
         
         # Return best move from the last completed search
-        return best_move_this_far
+        return best_move
 
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), max_player=True):
@@ -767,7 +786,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                     
                     ##score this move
                     
-                    score = self.score(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False), self)
+                    score = self.score(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False),self)
             
                     ## if score of this branch is better than beta, end search
             
