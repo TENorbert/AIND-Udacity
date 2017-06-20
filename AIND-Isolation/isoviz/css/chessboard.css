@@ -89,3 +89,15 @@ td {
   top: 2px;
   left: 2px;
 }
+
+/* white square */
+.square-55d63.player1 {
+  background-color: #ffd800;
+  color: #999999;
+}
+
+/* black square */
+.square-55d63.player2 {
+  background-color: #00ffff;
+  color: #333333;
+}

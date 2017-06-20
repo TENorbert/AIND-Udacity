@@ -247,7 +247,11 @@ var ANIMATION_HAPPENING = false,
   DRAGGING_A_PIECE = false,
   SPARE_PIECE_ELS_IDS = {},
   SQUARE_ELS_IDS = {},
-  SQUARE_ELS_OFFSETS;
+  SQUARE_ELS_OFFSETS,
+  BLACK_MOVE_NUMBER = 0,
+  WHITE_MOVE_NUMBER = 0,
+  PREVIOUS_MOVE 
+  ;
 
 //------------------------------------------------------------------------------
 // JS Util Functions
@@ -895,10 +899,24 @@ function drawPositionInstant() {
   boardEl.find('.' + CSS.piece).remove();
 
   // add the pieces
+  var j =0
   for (var i in CURRENT_POSITION) {
     if (CURRENT_POSITION.hasOwnProperty(i) !== true) continue;
-
-    $('#' + SQUARE_ELS_IDS[i]).append(buildPiece(CURRENT_POSITION[i]));
+    
+     if (CURRENT_POSITION[i]  != 'wN' && PREVIOUS_MOVE != i){
+        BLACK_MOVE_NUMBER = BLACK_MOVE_NUMBER + 1;
+        PREVIOUS_MOVE =  i;
+        j = j + 1
+        $('#' + SQUARE_ELS_IDS[i]).append(buildPiece(CURRENT_POSITION[i]) + '<Div style="color:blue;font-size: 14px">' + CURRENT_POSITION[i] + '-' + i +  '<br><div style="text-align: center;color:blue;font-size: 40px">' + BLACK_MOVE_NUMBER + '</div></Div>');
+     
+        }
+    else if (CURRENT_POSITION[i]  != 'bN' && PREVIOUS_MOVE != i){
+        WHITE_MOVE_NUMBER = WHITE_MOVE_NUMBER + 1;
+        PREVIOUS_MOVE =  i;
+        j = j + 1
+        $('#' + SQUARE_ELS_IDS[i]).append(buildPiece(CURRENT_POSITION[i]) + '<Div style="color:yellow;font-size: 14px">' + CURRENT_POSITION[i] + '-' + i +  '<br><div style="text-align: center;color:yellow;font-size: 40px">' + WHITE_MOVE_NUMBER + '</div></Div>');
+     }
+      
   }
 }
 
@@ -1090,6 +1108,7 @@ widget.position = function(position, useAnimation) {
     error(6482, 'Invalid value passed to the position method.', position);
     return;
   }
+  
 
   if (useAnimation === true) {
     // start the animations
@@ -1117,7 +1136,7 @@ widget.resize = function() {
   drawBoard();
 };
 
-widget.finalize = function(winCell, lossCell) {
+widget.finalize = function(winCell, lossCell,player1,player2) {
 
   var el;
   
@@ -1126,6 +1145,12 @@ widget.finalize = function(winCell, lossCell) {
 
   el = document.getElementById(SQUARE_ELS_IDS[lossCell]);
   el.classList.add("lose");
+  
+  el = document.getElementById(SQUARE_ELS_IDS[player1]);
+  el.classList.add("player1");
+
+  el = document.getElementById(SQUARE_ELS_IDS[player2]);
+  el.classList.add("player2");
 };
 
 // set the starting position

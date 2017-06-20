@@ -65,7 +65,7 @@ function runGame(board) {
 	if ( !form.player1.value || !form.player2.value || !form.moves.value)
 		return;
 
-	document.getElementById("runGame").disabled = true;
+	document.getElementById("runGame").disabled = false;
 	game = {player1: form.player1.value,
 			player2: form.player2.value,
 			moves: JSON.parse(form.moves.value)};
@@ -119,7 +119,9 @@ function runGame(board) {
 		if (idx >= game["moves"].length - 2) {
 			var winCell = ind2alpha(game["moves"][idx + 1]);
 			var loseCell = ind2alpha(game["moves"][idx]);
-			board.finalize(winCell, loseCell);
+         var player1 = ind2alpha(game["moves"][0]);
+         var player2 = ind2alpha(game["moves"][1]);
+			board.finalize(winCell, loseCell,player1,player2);
 			window.clearInterval(timer);
 			return;
 		}
