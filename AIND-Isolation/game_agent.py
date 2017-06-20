@@ -311,7 +311,7 @@ class MinimaxPlayer(IsolationPlayer):
                 
                 for move in legal_moves:
                     
-                    #temp_score = max(best_max_score,self.min_value(game, game.forecast_move(move)))
+                    #temp_score = max(best_max_score,self.min_value(game.forecast_move(move)))
                     #temp_score = max(best_max_score, self.score(self.minimax(game, depth, maximizing_player = False), self) )
                     temp_score = max(best_max_score, self.score(game.forecast_move(move), self))
                     
@@ -330,13 +330,13 @@ class MinimaxPlayer(IsolationPlayer):
                 return best_move
                 
                 ## Get move with best score
-                #return max([(self.min_value(game, game.forecast_move(move)), move) for move in legal_moves])
+                #return max([(self.min_value(game.forecast_move(move)), move) for move in legal_moves])
 
             else:
                            
                 for move in legal_moves:
                     
-                    #temp_score = min(best_min_score,self.max_value(game,game.forecast_move(move)))
+                    #temp_score = min(best_min_score,self.max_value(game.forecast_move(move)))
                     #temp_score = min(best_min_score,self.score(self.minimax(game, depth, maximizing_player = True), self))
                     temp_score = min(best_min_score, self.score(game.forecast_move(move), self))
                     
@@ -355,7 +355,7 @@ class MinimaxPlayer(IsolationPlayer):
                 return best_move
                 
                 ## Get move with best score
-                #return min([(self.max_value(game, game.forecast_move(move)), move) for move in legal_moves])
+                #return min([(self.max_value(game.forecast_move(move)), move) for move in legal_moves])
         
            
         
@@ -367,8 +367,16 @@ class MinimaxPlayer(IsolationPlayer):
             
             for move in legal_moves:
                 
-                temp_score = self.score(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False), self)
-                #temp_score = self.min_value(game, game.forecast_move(move))
+                '''
+                #Method1 in-eff
+                temp_move = self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)
+                game_clone = game.forecast_move(temp_move)
+                temp_score = self.score(game_clone, self)
+                '''
+
+                #Method2
+                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)), self)
+                #temp_score = self.min_value(game.forecast_move(move))
                 
                 # If we are lucky enough to find the winning score right away then end the damn for-loop
                 if temp_score == float('inf'):
@@ -390,8 +398,18 @@ class MinimaxPlayer(IsolationPlayer):
             
             for move in legal_moves:
                 
-                temp_score = self.score(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True), self)
-                #temp_score = self.max_value(game,game.forecast_move(move))
+                '''
+                ##Method1 in-eff
+                temp_move = self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)
+                game_clone = game.forecast_move(temp_move)
+                temp_score = self.score(game_clone, self)
+                '''
+
+                ## Method2
+                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)), self)
+                
+                ##testing
+                #temp_score = self.max_value(game.forecast_move(move))
     
                 # If we are lucky enough to find the winning score right away then end the damn for-loop
                 if temp_score == float('-inf'):
@@ -414,7 +432,7 @@ class MinimaxPlayer(IsolationPlayer):
 
 
 
-    def max_value(self, game, move):
+    def max_value(self, game):
 
         """
         Returns score of Max Player for a given game state
@@ -436,7 +454,8 @@ class MinimaxPlayer(IsolationPlayer):
         # Check if current move is the end move
         if self.terminal_state(game) == True:
 
-            return self.score(game.forecast_move(move), self)
+            #return self.score(game.forecast_move(move), self)
+            return self.score(game, self)
 
 
         legal_moves = game.get_legal_moves()
@@ -447,9 +466,9 @@ class MinimaxPlayer(IsolationPlayer):
         ##Now loop through all moves and find max score for all forecasted moves
         for move in legal_moves:
 
-            temporal_score =  self.score(game.forecast_move(move), self)
+            #temporal_score =  self.score(game.forecast_move(move), self)
             ##  Get Minplayer Score for all possible legal moves
-            #temporal_score =  self.min_value(game, game.forecast_move(move))
+            temporal_score =  self.min_value(game.forecast_move(move))
             
             # If we are lucky enough to find the winning score right away then end the damn for-loop
             if temporal_score == float('inf'):
@@ -467,7 +486,7 @@ class MinimaxPlayer(IsolationPlayer):
 
 
 
-    def min_value(self, game, move):
+    def min_value(self, game):
 
         """
         Returns score of Min Player for a given game state
@@ -490,7 +509,8 @@ class MinimaxPlayer(IsolationPlayer):
         # Check if current move is end move
         if self.terminal_state(game) == True:
 
-            return self.score(game.forecast_move(move), self) ## ought to return heuristic at terminal node?
+            #return self.score(game.forecast_move(move), self) 
+            return self.score(game, self) 
 
         #Worst possible value for Min Player
         min_score = float('inf')
@@ -502,8 +522,8 @@ class MinimaxPlayer(IsolationPlayer):
         for move in legal_moves:
 
             # Get temporal score from Max Player
-            temporal_score = self.score(game.forecast_move(move), self)
-            #temporal_score = self.max_value(game, game.forecast_move(move))
+            #temporal_score = self.score(game.forecast_move(move), self)
+            temporal_score = self.max_value(game.forecast_move(move))
             
             #End loop if we  arriaved at the best possible score for Min
             if temporal_score == float('-inf'):
@@ -785,8 +805,16 @@ class AlphaBetaPlayer(IsolationPlayer):
                 for move in legal_moves:
                     
                     ##score this move
+                    '''
+                    # Method 1 in-eff
+                    temp_move = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)
+                    game_clone = game.forecast_move(temp_move) 
+                    score = self.score(game_clone, self)
+                    '''
+
+                    #Method 2
+                    score = self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)),self)
                     
-                    score = self.score(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False),self)
             
                     ## if score of this branch is better than beta, end search
             
@@ -814,8 +842,16 @@ class AlphaBetaPlayer(IsolationPlayer):
                 for move in legal_moves:
                     
                     ##score this move
+                    '''
+                    # Method 1, ineff
+                    temp_move = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)
+                    game_clone = game.forecast_move(temp_move) 
+                    score = self.score(game_clone, self)
+                    '''
                     
-                    score = self.score(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True), self)
+                    #Method 2
+                    score = self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)),self)
+                    
             
                     ## if score of this branch is worse than alpha, end search
             
