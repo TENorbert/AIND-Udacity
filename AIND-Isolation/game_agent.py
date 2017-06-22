@@ -277,20 +277,16 @@ class MinimaxPlayer(IsolationPlayer):
         self.time_expired()
 
 
-        # Are there any legal moves left for us to play? If not, forfeit the game by return (-1, -1)!
+       
         legal_moves = game.get_legal_moves(game.active_player)
 
-        if not legal_moves:
+        
+        # Terminating State
+        # Are there any legal moves left for us to play? 
+        # If not, forfeit the game by return (-1, -1)!
+        if not legal_moves or depth <= 0:
 
             return (-1, -1)
-     
-
-        
-
-        ## For zero depth, forfeit game!
-        if depth == 0:
-
-            return (-1,-1)
 
 
         ## For Target Search Depth: depth
@@ -306,15 +302,61 @@ class MinimaxPlayer(IsolationPlayer):
         best_min_score = float('inf')
 
 
-        ## Handle depth == 1 
-        #return max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+        ## Mathod 1
+
+        ## Depth ==1
+        if depth == 1:
+
+            for move in legal_moves:
+
+                best_max_score = max(best_max_score, self.score(game.forecast_move(move), self))
+
+                best_move = move    
+            
+            return best_move
+
+
+
+
+        ## Select the best move from list of legal moves
+        best_move = legal_moves[0]
+
+
+        ## depth > 1
+        for move in legal_moves:
+            
+            """     
+            temp_score = self.min_value(game.forecast_move(move), depth)
+            
+            # If we are lucky enough to find the winning score right away then end the damn for-loop
+            if temp_score == float('inf'):
+                
+                return move
+            
+            if temp_score > best_max_score:
+                
+                best_max_score = temp_score
+                
+                best_move = move  
+            """
+
+            best_max_score = max(best_max_score, self.min_value(game.forecast_move(move), depth-1))
+
+            best_move = move    
+            
+        return best_move
+
+
         '''
+        ## Mathod 2
+
+        """
         ## Assume first player is the maximizing player for depth == 1 always.
         if depth == 1:
 
             for move in legal_moves:
                     
-                    temp_score = self.score(game.forecast_move(move), self)
+                    #temp_score = self.score(game.forecast_move(move), self)
                     
                      # If we are lucky enough to find the winning score right away then end the damn for-loop
                     if temp_score == float('inf'):
@@ -330,9 +372,8 @@ class MinimaxPlayer(IsolationPlayer):
             
             print(max([(self.score(game.forecast_move(move), self), move) for move in legal_moves]))       
             return best_move
-        '''
+        """
             
-
         if  depth == 1 :
             
             if maximizing_player == True:
@@ -389,12 +430,12 @@ class MinimaxPlayer(IsolationPlayer):
                     
             for move in legal_moves:
                 
-                '''
+                """
                 #Method1 in-eff
                 temp_move = self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)
                 game_clone = game.forecast_move(temp_move)
                 temp_score = self.score(game_clone, self)
-                '''
+                """
 
                 #Method2
                 temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, False)), self)
@@ -420,12 +461,12 @@ class MinimaxPlayer(IsolationPlayer):
             
             for move in legal_moves:
                 
-                '''
+                """
                 ##Method1 in-eff
                 temp_move = self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)
                 game_clone = game.forecast_move(temp_move)
                 temp_score = self.score(game_clone, self)
-                '''
+                """
 
                 ## Method2
                 temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, True)), self)
@@ -447,7 +488,8 @@ class MinimaxPlayer(IsolationPlayer):
     
     
             return best_move
-        
+
+            '''
 
             
 
@@ -475,39 +517,44 @@ class MinimaxPlayer(IsolationPlayer):
 
         legal_moves = game.get_legal_moves(game.active_player)
 
-
-        # Check if current move is the end move
-        if self.terminal_state(game,depth) == True:
-
-            #return self.score(game.forecast_move(move), self)
-            return self.score(game, self)
-
-
-        # depth == 0 Case:
-        if depth == 0:
-
-            return self.score(game, self)
-
-
         ## Worst possible score for Max Player
         max_score = float('-inf') 
 
+
+        ## Terminal State Test
+        if depth <= 0  or not legal_moves:
+
+            return max_score
+
+        '''
         ## depth == 1 Case:
         if depth == 1:
 
             for move in legal_moves:
 
+                """
+                temporal_score =  self.score(game.forecast_move(move), self)
+                
+                # If we are lucky enough to find the winning score right away then end the damn for-loop
+                if temporal_score == float('inf'):
+                    
+                    return temporal_score
+
+                if temporal_score > max_score:
+                    
+                    max_score = temporal_score
+                """
+
                 max_score = max(max_score, self.score(game.forecast_move(move), self) )
 
             return max_score
 
-        
-
+        '''
        
         ## depth > 1 Case
         for move in legal_moves:
 
-            '''
+            """
             temporal_score =  self.min_value(game.forecast_move(move), depth-1)
             
             # If we are lucky enough to find the winning score right away then end the damn for-loop
@@ -518,7 +565,8 @@ class MinimaxPlayer(IsolationPlayer):
             if temporal_score > max_score:
                 
                 max_score = temporal_score
-            '''
+            
+            """
             max_score = max(max_score, self.min_value(game.forecast_move(move), depth-1))
         
         return max_score
@@ -552,36 +600,45 @@ class MinimaxPlayer(IsolationPlayer):
          # Get all legal moves from thisw move
         legal_moves = game.get_legal_moves(game.active_player)
 
-        # Check if current move is end move
-        if self.terminal_state(game, depth) == True:
-
-            #return self.score(game.forecast_move(move), self) 
-            return self.score(game, self) 
-
-        if depth == 0:
-
-            return self.score(game, self) 
-
-
-        ## Handle depth > 0
         #Worst possible value for Min Player
         min_score = float('inf')
 
+        ## Terminal State Test
+        if depth <= 0 or not legal_moves:
 
+            return min_score
+
+
+        ## Non Termnal State
+        '''
         ## depth == 1 Case:
         if depth == 1:
 
             for move in legal_moves:
 
-                mins_score = min(min_score, self.score(game.forecast_move(move), self) )
+                """
+                # Get temporal score from Max Player
+                temporal_score = self.score(game.forecast_move(move), self)
+                
+                #End loop if we  arrived at the best possible score for Min
+                if temporal_score == float('-inf'):
+
+                    return temporal_score
+
+                if temporal_score < min_score:
+
+                    min_score = temporal_score
+                """
+                
+                min_score = min(min_score, self.score(game.forecast_move(move), self) )
 
             return min_score
-            
-       
+
+        '''
         ## depth > 1 case
         for move in legal_moves:
 
-            '''
+            """
             # Get temporal score from Max Player
             temporal_score = self.max_value(game.forecast_move(move), depth-1)
             
@@ -593,36 +650,13 @@ class MinimaxPlayer(IsolationPlayer):
             if temporal_score < min_score:
 
                 min_score = temporal_score
-
-            '''
+            """
+            
             min_score = min(min_score, self.max_value(game.forecast_move(move), depth-1))
 
         return min_score
         
 
-
-
-   
-
-
-
-    def terminal_state(self, game,depth):
-
-        """
-        A game state at a current move is terminal if there are no
-        legal moves available
-
-        Returns
-        -------
-         True/False if we are at a terminal state of game
-
-        """
-        #Check if time has expired
-        self.time_expired()
-            
-        
-        return (len(game.get_legal_moves(game.active_player)) == 0) or (depth < 0)
-        #raise NotImplementedError
 
 
 
