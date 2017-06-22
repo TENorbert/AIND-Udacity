@@ -204,13 +204,11 @@ class MinimaxPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
+
+
         self.time_left = time_left
         
-        ## If we just began the game or for an empty game
-        if game.move_count == 0:
-            
-            return (int(game.height/2), int(game.width/2))
-            
+  
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         # We want to keep track of the best move so far
@@ -279,12 +277,24 @@ class MinimaxPlayer(IsolationPlayer):
         self.time_expired()
 
 
-        # Are there any legal moves left for us to play? If not, then return (-1, -1)!
-        legal_moves = game.get_legal_moves()
+        # Are there any legal moves left for us to play? If not, forfeit the game by return (-1, -1)!
+        legal_moves = game.get_legal_moves(game.active_player)
 
         if not legal_moves:
 
             return (-1, -1)
+     
+
+        
+
+        ## For zero depth, forfeit game!
+        if depth == 0:
+
+            return (-1,-1)
+
+
+        ## For Target Search Depth: depth
+        ##
 
         # best move so far to return if timeout
         best_move = (-1,-1)
@@ -296,24 +306,15 @@ class MinimaxPlayer(IsolationPlayer):
         best_min_score = float('inf')
 
 
-
-        
-        # TODO: finish this function!
-        ## Max Node to begin with
-        if depth == 0:
-            ## Max is just the single Node so it does not matter much!
-            return max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-
-
+        ## Handle depth == 1 
+        #return max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+        '''
+        ## Assume first player is the maximizing player for depth == 1 always.
         if depth == 1:
-            
-            if maximizing_player == True:
-                
-                for move in legal_moves:
+
+            for move in legal_moves:
                     
-                    #temp_score = max(best_max_score,self.min_value(game.forecast_move(move)))
-                    #temp_score = max(best_max_score, self.score(self.minimax(game, depth, maximizing_player = False), self) )
-                    temp_score = max(best_max_score, self.score(game.forecast_move(move), self))
+                    temp_score = self.score(game.forecast_move(move), self)
                     
                      # If we are lucky enough to find the winning score right away then end the damn for-loop
                     if temp_score == float('inf'):
@@ -322,23 +323,47 @@ class MinimaxPlayer(IsolationPlayer):
                     
                     if temp_score > best_max_score:
                         
-                        best_max_score == temp_score
+                        best_max_score = temp_score
+                        
+                        best_move = move
+                        
+            
+            print(max([(self.score(game.forecast_move(move), self), move) for move in legal_moves]))       
+            return best_move
+        '''
+            
+
+        if  depth == 1 :
+            
+            if maximizing_player == True:
+                
+                for move in legal_moves:
+                    
+                    #temp_score = max(best_max_score,self.min_value(game.forecast_move(move)))
+                    #temp_score = max(best_max_score, self.score(self.minimax(game, depth, maximizing_player = False), self) )
+                    temp_score = self.score(game.forecast_move(move), self)
+                    
+                     # If we are lucky enough to find the winning score right away then end the damn for-loop
+                    if temp_score == float('inf'):
+                        
+                        return move
+                    
+                    if temp_score > best_max_score:
+                        
+                        best_max_score = temp_score
                         
                         best_move = move
                         
                         
                 return best_move
                 
-                ## Get move with best score
-                #return max([(self.min_value(game.forecast_move(move)), move) for move in legal_moves])
-
             else:
                            
                 for move in legal_moves:
                     
                     #temp_score = min(best_min_score,self.max_value(game.forecast_move(move)))
                     #temp_score = min(best_min_score,self.score(self.minimax(game, depth, maximizing_player = True), self))
-                    temp_score = min(best_min_score, self.score(game.forecast_move(move), self))
+                    temp_score = self.score(game.forecast_move(move), self)
                     
                      # If we are lucky enough to find the minimal score right away then end the damn for-loop
                     if temp_score == float('-inf'):
@@ -347,24 +372,21 @@ class MinimaxPlayer(IsolationPlayer):
                     
                     if temp_score < best_min_score:
                         
-                        best_min_score == temp_score
+                        best_min_score = temp_score
                         
                         best_move = move
                         
                         
                 return best_move
-                
-                ## Get move with best score
-                #return min([(self.max_value(game.forecast_move(move)), move) for move in legal_moves])
         
-           
+
         
         ## Now we have depth > 1
-        # so we recursively call the maximum algorithm
+        # so we recursively call the minimax algorithm
+        #if depth > 1:
+
         if maximizing_player == True:
-            
-            #depth -= 1
-            
+                    
             for move in legal_moves:
                 
                 '''
@@ -375,7 +397,7 @@ class MinimaxPlayer(IsolationPlayer):
                 '''
 
                 #Method2
-                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)), self)
+                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, False)), self)
                 #temp_score = self.min_value(game.forecast_move(move))
                 
                 # If we are lucky enough to find the winning score right away then end the damn for-loop
@@ -393,8 +415,6 @@ class MinimaxPlayer(IsolationPlayer):
             return best_move
             
         else: ## Handle Minimmizing player
-          
-            #depth -= 1
             
             for move in legal_moves:
                 
@@ -406,7 +426,7 @@ class MinimaxPlayer(IsolationPlayer):
                 '''
 
                 ## Method2
-                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)), self)
+                temp_score = self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, True)), self)
                 
                 ##testing
                 #temp_score = self.max_value(game.forecast_move(move))
@@ -458,7 +478,7 @@ class MinimaxPlayer(IsolationPlayer):
             return self.score(game, self)
 
 
-        legal_moves = game.get_legal_moves()
+        legal_moves = game.get_legal_moves(game.active_player)
 
         ## Worst possible score for Max Player
         max_score = float('-inf')
@@ -516,7 +536,7 @@ class MinimaxPlayer(IsolationPlayer):
         min_score = float('inf')
         
         # Get all legal moves from thisw move
-        legal_moves = game.get_legal_moves()
+        legal_moves = game.get_legal_moves(game.active_player)
 
         ##Now loop through all moves and find max score for all forcasted moves
         for move in legal_moves:
@@ -557,7 +577,7 @@ class MinimaxPlayer(IsolationPlayer):
         self.time_expired()
             
         
-        return len(game.get_legal_moves()) == 0
+        return len(game.get_legal_moves(game.active_player)) == 0
         #raise NotImplementedError
 
 
@@ -614,6 +634,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         self.time_left = time_left
         
+        '''
         if self.time_left() < self.TIMER_THRESHOLD:
 
             legal_player_moves = self.get_legal_moves()
@@ -624,9 +645,15 @@ class AlphaBetaPlayer(IsolationPlayer):
             return best_move
 
             #raise SearchTimeout()
+        '''
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+        
+            raise SearchTimeout()
 
 
-        legal_moves = game.get_legal_moves()
+        ## check if any legal moves i.e forfeit the game at once
+        legal_moves = game.get_legal_moves(game.active_player)
 
         if not legal_moves:
 
@@ -634,12 +661,13 @@ class AlphaBetaPlayer(IsolationPlayer):
         
 
 
-        ## If we just started the game then the center is the best move
+        ## on an empty board. Get the center move as the best move
         if game.move_count == 0:
 
             return (int(game.height/2), int(game.width/2))
-            
+        
 
+        
         # TODO: finish this function!
         #raise NotImplementedError
         # Initialised best move so far
@@ -730,7 +758,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         #Get legal moves left for us to play
 
-        legal_moves = game.get_legal_moves()
+        legal_moves = game.get_legal_moves(game.active_player)
         
         if not legal_moves:
             
@@ -848,7 +876,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                     game_clone = game.forecast_move(temp_move) 
                     score = self.score(game_clone, self)
                     '''
-                    
+
                     #Method 2
                     score = self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)),self)
                     
