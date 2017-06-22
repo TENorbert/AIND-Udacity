@@ -302,7 +302,6 @@ class MinimaxPlayer(IsolationPlayer):
         best_min_score = float('inf')
 
 
-        '''
         ##
         ## Mathod I: Use max_value and min_value functions
         ##
@@ -314,7 +313,9 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return (-1, -1)
 
-            best_max_depth_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+            else:
+
+                best_max_depth_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
             return best_move
 
@@ -328,27 +329,31 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return (-1, -1)
 
-            best_max_depth_score, best_move = max([(self.min_value(game.forecast_move(move), depth), move) for move in legal_moves])
+            else:
 
-                
+                best_max_depth_score, best_move = max([(self.min_value(game.forecast_move(move), depth-1), move) for move in legal_moves])
+  
             return best_move
-        '''
-        
 
+        '''
+        """
         ##
         ## Mathod II : Define and Recurcively call maximum function
         ##
-        ## No need of maximizing_player stuff
-        ## Assume First player is always maximizing player
+        ## Assumption: Assume First player is always maximizing player
         ##
+        ##             No need of maximizing_player stuff
+        ## 
 
         if depth == 1:
 
             if not legal_moves:
 
-                return best_move
+                return (-1, -1)
 
-            best_move_depth_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+            else:
+
+                best_move_depth_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
             return best_move ## in future could return best_move_depth_score
 
@@ -356,17 +361,21 @@ class MinimaxPlayer(IsolationPlayer):
 
             if not legal_moves:
 
-                return best_move
+                return (-1, -1)
 
-            best_move_depth_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1)),self), move) for move in legal_moves])
+            else:
+
+                best_move_depth_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1)),self), move) for move in legal_moves])
                 
             return best_move  ##  in future could return best_move_depth_score
+        """
 
-
-        '''
+        
         ##
-        ##  No Assumption: 
-        ##  Define Maximizing Player explicitely
+        ## Mathod II : Define and Recurcively call maximum function
+        ##
+        ##  NO Assumption: Explicitely define
+        ##                 Maximizing Player explicitely
         ##
 
         if  depth == 1 :
@@ -375,9 +384,11 @@ class MinimaxPlayer(IsolationPlayer):
                 
                 if not legal_moves:
 
-                    return best_move
+                    return (-1, -1)
 
-                best_max_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+                else:
+
+                    best_max_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
                 return best_move ## In future colud return best_max_score
                 
@@ -385,9 +396,11 @@ class MinimaxPlayer(IsolationPlayer):
                            
                 if not legal_moves:
 
-                    return best_move
+                    return (-1, -1)
 
-                best_min_score, best_move = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+                else:
+
+                    best_min_score, best_move = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
                 return best_move  ## In future colud return best_min_score
     
@@ -402,9 +415,11 @@ class MinimaxPlayer(IsolationPlayer):
 
                 if not legal_moves:
 
-                    return best_move
+                    return (-1, -1)
 
-                best_max_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)),self), move) for move in legal_moves])
+                else:
+
+                    best_max_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)),self), move) for move in legal_moves])
                 
                 return best_move  ## future could return best_max_score
                           
@@ -412,17 +427,21 @@ class MinimaxPlayer(IsolationPlayer):
                 
                 if not legal_moves:
 
-                    return best_move 
+                    return (-1, -1) 
 
-                best_min_score, best_move = min([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)),self), move) for move in legal_moves])
+                else:
+
+                    best_min_score, best_move = min([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)),self), move) for move in legal_moves])
                 
                 return best_move ## In future could return best_min_score
 
         '''      
-
+    ##
     ## Method I : Uses Max and Min Functions seperately
     ##
+    
     ## Maximum Value function
+    #
     def max_value(self, game, depth):
 
         """
@@ -461,7 +480,9 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return max_score
 
-            max_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+            else:
+
+                max_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
             return max_score
 
@@ -480,7 +501,9 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return max_score
 
-            max_score, best_move = max([(self.min_value(game.forecast_move(move), depth-1), move) for move in legal_moves])
+            else:
+
+                max_score, best_move = max([(self.min_value(game.forecast_move(move), depth-1), move) for move in legal_moves])
 
             return max_score # I could also return best_move in future..
 
@@ -497,6 +520,7 @@ class MinimaxPlayer(IsolationPlayer):
 
     ##
     ## Minimum Value function
+    #
     def min_value(self, game, depth):
 
         """
@@ -538,6 +562,8 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return min_score
 
+            else:
+
                 min_score, best_move = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
             return min_score # I could also return best_move in future..
@@ -556,7 +582,9 @@ class MinimaxPlayer(IsolationPlayer):
 
                 return min_score
 
-            min_score, best_move = min([(self.max_value(game.forecast_move(move), depth-1), move) for move in legal_moves])
+            else:
+
+                min_score, best_move = min([(self.max_value(game.forecast_move(move), depth-1), move) for move in legal_moves])
 
             return min_score # I could also return best_move in future..
 
