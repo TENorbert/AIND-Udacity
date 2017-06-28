@@ -335,110 +335,7 @@ class MinimaxPlayer(IsolationPlayer):
   
             return best_move
 
-        '''
-        """
-        ##
-        ## Mathod II : Define and Recurcively call maximum function
-        ##
-        ## Assumption: Assume First player is always maximizing player
-        ##
-        ##             No need of maximizing_player stuff
-        ## 
-
-        if depth == 1:
-
-            if not legal_moves:
-
-                return (-1, -1)
-
-            else:
-
-                best_move_depth_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-
-            return best_move ## in future could return best_move_depth_score
-
-        elif depth > 1:
-
-            if not legal_moves:
-
-                return (-1, -1)
-
-            else:
-
-                best_move_depth_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1)),self), move) for move in legal_moves])
-                
-            return best_move  ##  in future could return best_move_depth_score
-        """
-
         
-        ##
-        ## Mathod II : Define and Recurcively call maximum function
-        ##
-        ##  NO Assumption: Explicitely define
-        ##                 Maximizing Player explicitely
-        ##
-
-        if  depth == 1 :
-            
-            if maximizing_player == True:
-                
-                if not legal_moves:
-
-                    return (-1, -1)
-
-                else:
-
-                    best_max_score, best_move = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-
-                return best_move ## In future colud return best_max_score
-                
-            else:
-                           
-                if not legal_moves:
-
-                    return (-1, -1)
-
-                else:
-
-                    best_min_score, best_move = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-
-                return best_move  ## In future colud return best_min_score
-    
-
-        
-        ## Now we have depth > 1
-        # so we recursively call the minimax algorithm
-
-        elif depth > 1:
-
-            if maximizing_player == True:
-
-                if not legal_moves:
-
-                    return (-1, -1)
-
-                else:
-
-                    best_max_score, best_move = max([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = False)),self), move) for move in legal_moves])
-                
-                return best_move  ## future could return best_max_score
-                          
-            else: 
-                
-                if not legal_moves:
-
-                    return (-1, -1) 
-
-                else:
-
-                    best_min_score, best_move = min([(self.score(game.forecast_move(self.minimax(game.forecast_move(move), depth-1, maximizing_player = True)),self), move) for move in legal_moves])
-                
-                return best_move ## In future could return best_min_score
-
-        '''      
-    ##
-    ## Method I : Uses Max and Min Functions seperately
-    ##
 
     ## Maximum Value function
     #
@@ -486,14 +383,9 @@ class MinimaxPlayer(IsolationPlayer):
 
             return max_score
 
-            """
-            for move in legal_moves:
+            
 
-                max_score = max(max_score, self.score(game.forecast_move(move), self) )
-
-            return max_score
-            """
-        
+        ## >1 depth
         elif depth > 1:
             ## depth > 1 Case
 
@@ -507,15 +399,7 @@ class MinimaxPlayer(IsolationPlayer):
 
             return max_score # I could also return best_move in future..
 
-            """
-            for move in legal_moves:
-
-                #max_score = max(max_score, self.min_value(game.forecast_move(move), depth-1))
-            
-            return max_score
-            """
-
-
+        
 
 
     ##
@@ -567,14 +451,9 @@ class MinimaxPlayer(IsolationPlayer):
                 min_score, best_move = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
 
             return min_score # I could also return best_move in future..
-    
-            """
-            for move in legal_moves:
-                
-                min_score = min(min_score, self.score(game.forecast_move(move), self) )
 
-            return min_score
-            """
+
+        ## > 1 Depth
 
         elif depth > 1:
 
@@ -588,13 +467,6 @@ class MinimaxPlayer(IsolationPlayer):
 
             return min_score # I could also return best_move in future..
 
-            """
-            for move in legal_moves:
-                
-                #min_score = min(min_score, self.max_value(game.forecast_move(move), depth-1))
-
-            return min_score
-            """
 
 
     def time_expired(self):
@@ -668,19 +540,16 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (int(game.height/2), int(game.width/2))
         
 
-        
-        # TODO: finish this function!
-        #raise NotImplementedError
-        # Initialised best move so far
+
+        # Initialised best move & Score so far
+        ### Assumning First Player is maximizing player
         best_move = (-1, -1)
 
         best_score = float('inf')
 
 
-        
-        ## TO DO
+
         # How to handle Iterative search Vs Non-Iterative Search
-        
         try:
             if iterative_deepening_search == True:
 
@@ -698,7 +567,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             
         except SearchTimeout:
             
-            # Handle any actions required after timeout as needed
+            # Actions  Taken required after timeout as needed
             pass
             
         
@@ -751,6 +620,9 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
+
+
+
         ## Time out check
         self.time_out()
 
@@ -800,117 +672,6 @@ class AlphaBetaPlayer(IsolationPlayer):
 
 
             return optimal_move
-
-
-            
-        '''
-        ## Heading for target search depth,
-        lowest_score_this_far = float('inf')
-        
-        highest_score_this_far = float('-inf')
-        
-        best_move_this_far = (-1, -1)
-
-        
-
-    
-        ## start with depth == 1        
-        if depth == 1:
-            
-            if max_player == True:
-
-                # Get the highest or equal beta score & move
-                #highest_beta_score_this_far, best_beta_move_so_far = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves if self.score(game.forecast_move(move), self) >= beta])
-                for my_move in legal_moves:
-
-                    highest_score_this_far = self.score(game.forecast_move(my_move), self)
-
-                    ## As soon as we get greater_than_beta move, we're good.
-                    if  highest_score_this_far >= beta:
-
-                        return my_move
-
-
-
-                # Get for highest score move
-                temp_max_score, best_move_this_far = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-                    
-                return best_move_this_far
-
-                
-            #Not max player?
-            else:
-
-                # Get smaller or equal alpha score & move
-                #lowest_alpha_score_this_far, best_alpha_move_so_far = [(self.score(game.forecast_move(move), self), move) for move in legal_moves if self.score(game.forecast_move(move), self) <= alpha]
-                for my_move in legal_moves:
-
-                    lowest_score_this_far  = self.score(game.forecast_move(my_move), self)
-
-                    ## As soon as we get less_than_alpha_ move, we're good.
-                    if lowest_score_this_far  <= alpha:
-
-                        return my_move
-
-
-                # Check for smallest score move
-                lowest_score_this_far, best_move_this_far = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
-      
-                return best_move_this_far
-                
-        
-        
-        ## We still have some legal moves and we are not yet at target search
-        #depth > 1
-        
-        elif depth > 1:
-            
-            if max_player == True:
-
-                # Get the higher or equal to beta score & move
-                #highest_beta_score_this_far, best_beta_move_so_far = [(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=False)),self), move) for move in legal_moves if self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=False)),self) >= beta ]
-                for my_move in legal_moves:
-
-                    highest_score_this_far = self.score(game.forecast_move(self.alphabeta(game.forecast_move(my_move), depth-1, alpha, beta, max_player=False)), self)
-
-                    ## As soon as we get greater_than_beta move, we're good.
-                    if highest_score_this_far >= beta:
-
-                        return my_move
-
-                # Get for highest score move
-                highest_score_this_far, best_move_this_far = max([(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)),self), move) for move in legal_moves])
-
-                ## Get new alpha
-                alpha = max(alpha, highest_score_this_far)
-
-                return best_move_this_far
-
-                
-            # Not max player?
-            else:
-
-                # Get smaller than or equal to alpha move
-                #lowest_alpha_score_this_far, best_alpha_move_so_far = [(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=True)),self), move) for move in legal_moves if self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=True)),self) <= alpha ]
-                for my_move in legal_moves:
-
-                    lowest_score_this_far = self.score(game.forecast_move(self.alphabeta(game.forecast_move(my_move), depth-1, alpha, beta, max_player=True)),self)
-
-                    ## As soon as we get less_than_alpha_ move, we're good.
-                    if  lowest_score_this_far <= alpha:
-
-                        return  my_move
-
-
-                # Check for smallest score move
-                lowest_score_this_far, best_move_this_far = min([(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)),self), move) for move in legal_moves])
-
-                ## Get new beta
-                beta = min(beta, lowest_score_this_far)
-
-                return best_move_this_far
-                
-            '''
 
 
 
