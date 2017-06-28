@@ -439,7 +439,7 @@ class MinimaxPlayer(IsolationPlayer):
     ##
     ## Method I : Uses Max and Min Functions seperately
     ##
-    
+
     ## Maximum Value function
     #
     def max_value(self, game, depth):
@@ -649,22 +649,8 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         self.time_left = time_left
         
-        '''
-        if self.time_left() < self.TIMER_THRESHOLD:
-
-            legal_player_moves = self.get_legal_moves()
-            game_copy = self.copy()
-
-            best_move = self._active_player.get_move(game_copy, time_left)
-
-            return best_move
-
-            #raise SearchTimeout()
-        '''
-
-        if self.time_left() < self.TIMER_THRESHOLD:
-        
-            raise SearchTimeout()
+        ## check Time Out
+        self.time_out()
 
 
         ## check if any legal moves i.e forfeit the game at once
@@ -765,158 +751,359 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        # TODO: finish this function!
-        #raise NotImplementedError
+        ## Time out check
+        self.time_out()
 
         #Get legal moves left for us to play
-
         legal_moves = game.get_legal_moves(game.active_player)
         
-        if not legal_moves:
-            
+        ## Terminal State
+        if not legal_moves or depth <= 0:
+
             return (-1, -1)
+
+
+        ## Now begin Terminal Iterative search
+        optimal_move = (-1, -1)
+
+        optimal_score = alpha
+
+
+        ## start with depth == 1        
+        if depth == 1:
+
+            for move in legal_moves:
+
+                temp_score = self.score(game.forecast_move(move), self)
+
+                if temp_score > optimal_score:
+
+                    optimal_score = temp_score
+
+                    optimal_move = move
+
+
+            return optimal_move
+
+
+        elif depth > 1:
+
+            for move in legal_moves:
+
+                temp_score = self.min_alpha_beta(game.forecast_move(move), depth-1, optimal_score, beta)
+
+                if temp_score > optimal_score:
+
+                    optimal_score = temp_score
+
+                    optimal_move = move
+
+
+            return optimal_move
+
+
             
-        ## If we reach the target search depth,
-            
-            
+        '''
+        ## Heading for target search depth,
         lowest_score_this_far = float('inf')
         
         highest_score_this_far = float('-inf')
         
         best_move_this_far = (-1, -1)
+
         
-        
+
+    
         ## start with depth == 1        
         if depth == 1:
             
             if max_player == True:
-                
-                for move in legal_moves:
+
+                # Get the highest or equal beta score & move
+                #highest_beta_score_this_far, best_beta_move_so_far = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves if self.score(game.forecast_move(move), self) >= beta])
+                for my_move in legal_moves:
+
+                    highest_score_this_far = self.score(game.forecast_move(my_move), self)
+
+                    ## As soon as we get greater_than_beta move, we're good.
+                    if  highest_score_this_far >= beta:
+
+                        return my_move
+
+
+
+                # Get for highest score move
+                temp_max_score, best_move_this_far = max([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
                     
-                    #score this move
-                    
-                    score = self.score(game.forecast_move(move), self)
-                    
-                    #is score better than beta? no need to search further if so
-                    
-                    if score >= beta:
-                        
-                        return move
-                        
-                    if score > highest_score_this_far:
-                        
-                        highest_score_this_far = score
-                        
-                        best_move_this_far = move
-                        
                 return best_move_this_far
+
                 
             #Not max player?
             else:
-                
-                for move in legal_moves:
-                    
-                    #score this move
-                    score = self.score(game.forecast_move(move), self)
-                    
-                    #is score worse than alpha? no need to search further
-                    
-                    if score <= alpha:
-                        
-                        return move
-                        
-                    if score < lowest_score_this_far:
-                        
-                        lowest_score_this_far = score
-                        
-                        best_move_this_far = move
-                        
+
+                # Get smaller or equal alpha score & move
+                #lowest_alpha_score_this_far, best_alpha_move_so_far = [(self.score(game.forecast_move(move), self), move) for move in legal_moves if self.score(game.forecast_move(move), self) <= alpha]
+                for my_move in legal_moves:
+
+                    lowest_score_this_far  = self.score(game.forecast_move(my_move), self)
+
+                    ## As soon as we get less_than_alpha_ move, we're good.
+                    if lowest_score_this_far  <= alpha:
+
+                        return my_move
+
+
+                # Check for smallest score move
+                lowest_score_this_far, best_move_this_far = min([(self.score(game.forecast_move(move), self), move) for move in legal_moves])
+      
                 return best_move_this_far
-        
+                
         
         
         ## We still have some legal moves and we are not yet at target search
         #depth > 1
         
-        else:
+        elif depth > 1:
             
             if max_player == True:
-                
-                for move in legal_moves:
-                    
-                    ##score this move
-                    '''
-                    # Method 1 in-eff
-                    temp_move = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)
-                    game_clone = game.forecast_move(temp_move) 
-                    score = self.score(game_clone, self)
-                    '''
 
-                    #Method 2
-                    score = self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)),self)
-                    
-            
-                    ## if score of this branch is better than beta, end search
-            
-                    if score > beta:
-                        
-                        return move
-                        
-                    ## Score is not better than beta so get new alpha
-                        
-                    if score > highest_score_this_far:
-                        
-                        highest_score_this_far = score
-                        
-                        best_move_this_far = move
-                        
-                        ## Get new alpha
-                        alpha = max(alpha, highest_score_this_far)
-                        
+                # Get the higher or equal to beta score & move
+                #highest_beta_score_this_far, best_beta_move_so_far = [(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=False)),self), move) for move in legal_moves if self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=False)),self) >= beta ]
+                for my_move in legal_moves:
+
+                    highest_score_this_far = self.score(game.forecast_move(self.alphabeta(game.forecast_move(my_move), depth-1, alpha, beta, max_player=False)), self)
+
+                    ## As soon as we get greater_than_beta move, we're good.
+                    if highest_score_this_far >= beta:
+
+                        return my_move
+
+                # Get for highest score move
+                highest_score_this_far, best_move_this_far = max([(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=False)),self), move) for move in legal_moves])
+
+                ## Get new alpha
+                alpha = max(alpha, highest_score_this_far)
+
                 return best_move_this_far
+
                 
             # Not max player?
-                
             else:
-                
-                for move in legal_moves:
-                    
-                    ##score this move
-                    '''
-                    # Method 1, ineff
-                    temp_move = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)
-                    game_clone = game.forecast_move(temp_move) 
-                    score = self.score(game_clone, self)
-                    '''
 
-                    #Method 2
-                    score = self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)),self)
-                    
-            
-                    ## if score of this branch is worse than alpha, end search
-            
-                    if score <= alpha:
-                        
-                        return move
-                        
-                    ## Score is not better than beta so get new alpha
-                        
-                    if score < lowest_score_this_far:
-                        
-                        lowest_score_this_far = score
-                        
-                        best_move_this_far = move
-                        
-                        ## Get new beta
-                        beta = min(beta, lowest_score_this_far)
-                        
+                # Get smaller than or equal to alpha move
+                #lowest_alpha_score_this_far, best_alpha_move_so_far = [(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=True)),self), move) for move in legal_moves if self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, max_player=True)),self) <= alpha ]
+                for my_move in legal_moves:
+
+                    lowest_score_this_far = self.score(game.forecast_move(self.alphabeta(game.forecast_move(my_move), depth-1, alpha, beta, max_player=True)),self)
+
+                    ## As soon as we get less_than_alpha_ move, we're good.
+                    if  lowest_score_this_far <= alpha:
+
+                        return  my_move
+
+
+                # Check for smallest score move
+                lowest_score_this_far, best_move_this_far = min([(self.score(game.forecast_move(self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, max_player=True)),self), move) for move in legal_moves])
+
+                ## Get new beta
+                beta = min(beta, lowest_score_this_far)
+
                 return best_move_this_far
                 
-                
-                        
+            '''
+
+
+
+
+    def max_alpha_beta(self, game, depth, alpha, beta):
+        """
+        Implement max_alpha_beta of depth-limited minimax search with alpha-beta pruning as
+        described in the lectures.
+
+        This should be a modified version of ALPHA-BETA-SEARCH in the AIMA text
+        https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers
+
+
+       
+
+        Returns
+        -------
+
+        alpha: float
+            The new updated Alpha limits the lower bound of search on minimizing layers
+
+        """
+
+        # time_out
+        self.time_out()
+
+        # get legal moves
+        legal_moves = game.get_legal_moves(game.active_player)
+
+        #Worst possible value for Max Player
+        max_score = float('-inf')
+
+
+        ## Terminal State Test
+        if not legal_moves and depth <= 0:
+
+            return max_score  
+
+
+        ## depth == 1
+
+        if depth == 1:
+
+            for my_move in legal_moves:
+
+                max_score = max(max_score, self.score(game.forecast_move(my_move), self) )
+
+                ## As soon as we get greater_than_beta move, we're good.
+                if  max_score >= beta:
+
+                    return  max_score
+
+                alpha = max(alpha, max_score)
+
+            return alpha
+
+        
+        ## depth > 1
+        if depth > 1:
+
+            for my_move in legal_moves:
+
+                max_score = max(max_score, self.min_alpha_beta(game.forecast_move(my_move), depth-1, alpha, beta) )
+
+                ## As soon as we get greater_than_beta, we're good.
+                if  max_score >= beta:
+
+                    return  max_score
+
+                alpha = max(alpha, max_score)
+
+
+            return alpha
+
+
+
+
+
+    def min_alpha_beta(self, game, depth, alpha, beta):
+
+        """
+        Implement min_alpha_beta of depth-limited minimax search with alpha-beta pruning as
+        described in the lectures.
+
+        This should be a modified version of ALPHA-BETA-SEARCH in the AIMA text
+        https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers
+
+
+        float
+            beta
+
+        Returns
+        -------
+
+        beta: float
+            Updated Beta limits the upper bound of search on maximizing layers
+
+        """
+
+        # time_out
+        self.time_out()
+
+        #Get Legal Moves:
+        legal_moves = game.get_legal_moves(game.active_player)
+
+        #Worst possible value for Max Player
+        min_score = float('inf')
+
+
+
+        ## Terminal State Test
+        if not legal_moves and depth <= 0:
+
+            return min_score
+
+
+        ## depth == 1
+
+        if depth == 1:
+
+            for my_move in legal_moves:
+
+                min_score = min(min_score, self.score(game.forecast_move(my_move), self) )
+
+                 ## As soon as we get less than beta, we're good.
+                if  min_score <= alpha:
+
+                    return  min_score
+
+                beta = min(beta, min_score)
+
+            return beta
+
+        
+        ## depth > 1
+        if depth > 1:
+
+            for my_move in legal_moves:
+
+                min_score = min(min_score, self.max_alpha_beta(game.forecast_move(my_move), depth-1, alpha, beta) )
+
+                ## As soon as we get less than beta, we're good.
+                if  min_score <= alpha:
+
+                    return  min_score
+
+                beta = min(beta, min_score)
+
+
+            return beta
+
+
+    def time_out(self):
+        """
+         Raises Tiem out error once time has expired
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+    
+            raise SearchTimeout()
+            
+                    
                     
         
        
