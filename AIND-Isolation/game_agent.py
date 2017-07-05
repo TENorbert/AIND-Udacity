@@ -14,6 +14,7 @@ class SearchTimeout(Exception):
 
 
 
+
 ## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE + LEGITIMATE MOVES
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -39,7 +40,8 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
 
-        PERFORMANCE
+
+        PERFORMANCE::
 
                         *************************
                              Playing Matches
@@ -47,17 +49,17 @@ def custom_score(game, player):
 
          Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
                                 Won | Lost   Won | Lost   Won | Lost   Won | Lost
-            1       Random      10  |   0     9  |   1     7  |   3     8  |   2
-            2       MM_Open      6  |   4     7  |   3     9  |   1     5  |   5
-            3      MM_Center     7  |   3     8  |   2     9  |   1     5  |   5
-            4     MM_Improved    7  |   3     6  |   4     7  |   3     7  |   3
-            5       AB_Open      7  |   3     5  |   5     5  |   5     2  |   8
-            6      AB_Center     7  |   3     4  |   6     7  |   3     5  |   5
-            7     AB_Improved    5  |   5     5  |   5     5  |   5     4  |   6
+            1       Random       8  |   2    10  |   0     9  |   1     8  |   2
+            2       MM_Open      6  |   4     8  |   2     8  |   2     6  |   4
+            3      MM_Center     8  |   2     6  |   4     7  |   3     8  |   2
+            4     MM_Improved    8  |   2     6  |   4     6  |   4     8  |   2
+            5       AB_Open      7  |   3     6  |   4     7  |   3     7  |   3
+            6      AB_Center     5  |   5     6  |   4     6  |   4     6  |   4
+            7     AB_Improved    5  |   5     4  |   6     6  |   4     4  |   6
         --------------------------------------------------------------------------
-                   Win Rate:      70.0%        62.9%        70.0%        51.4%
+                   Win Rate:      67.1%        65.7%        70.0%        67.1%
 
-        Your ID search forfeited 163.0 games while there were still legal moves available to play.
+        Your ID search forfeited 160.0 games while there were still legal moves available to play.
 
     """
 
@@ -129,7 +131,16 @@ def custom_score(game, player):
 
             legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
 
-            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
+            if legitimate_player_moves != legitimate_opp_moves:
+
+                return float(legitimate_player_moves - legitimate_opp_moves) / 100.
+
+            else:
+
+                return 0.
+            
+
+
 
 
 '''
@@ -137,12 +148,6 @@ def custom_score(game, player):
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
         of the given player.
-
-        This heuristic value is simply the difference between the player's
-        EUCLIDEAN distance to center of board as new evaluation
-        dist((x,y), (cx,cy)) = sqrt((x-cx)**2 + (y-cy)**2)
-        Since player most closest to the center
-        would likely win due if only the opponent does not mirror his subsequent moves.
 
         Note: this function should be called from within a Player instance as
         `self.score()` -- you should not need to call this function directly.
@@ -164,23 +169,23 @@ def custom_score(game, player):
 
 
 
-                        *************************
+                       *************************
                              Playing Matches
                         *************************
 
-             Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
-                                    Won | Lost   Won | Lost   Won | Lost   Won | Lost
-                1       Random       8  |   2     8  |   2     7  |   3     6  |   4
-                2       MM_Open      7  |   3     8  |   2     8  |   2     6  |   4
-                3      MM_Center     7  |   3     8  |   2     7  |   3     9  |   1
-                4     MM_Improved    7  |   3     7  |   3     6  |   4     4  |   6
-                5       AB_Open      7  |   3     6  |   4     5  |   5     4  |   6
-                6      AB_Center     5  |   5     5  |   5     6  |   4     4  |   6
-                7     AB_Improved    4  |   6     6  |   4     5  |   5     4  |   6
-            --------------------------------------------------------------------------
-                       Win Rate:      64.3%        68.6%        62.9%        52.9%
+         Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                                Won | Lost   Won | Lost   Won | Lost   Won | Lost
+            1       Random       8  |   2     8  |   2     7  |   3     8  |   2
+            2       MM_Open      8  |   2     6  |   4     7  |   3     8  |   2
+            3      MM_Center     8  |   2     9  |   1     9  |   1     6  |   4
+            4     MM_Improved    5  |   5     8  |   2     4  |   6     7  |   3
+            5       AB_Open      7  |   3     6  |   4     5  |   5     5  |   5
+            6      AB_Center     4  |   6     8  |   2     4  |   6     4  |   6
+            7     AB_Improved    7  |   3     6  |   4     4  |   6     3  |   7
+        --------------------------------------------------------------------------
+                   Win Rate:      67.1%        72.9%        57.1%        58.6%
 
-            Your ID search forfeited 167.0 games while there were still legal moves available to play.
+        Your ID search forfeited 164.0 games while there were still legal moves available to play
 
     """
 
@@ -209,12 +214,12 @@ def custom_score(game, player):
     ## Now use distance to center: return 0 if both distances to center are equal
     else:
 
-        player_dist_from_center = distance_to_center(game, player_y_position,player_x_position)
-        opponent_dist_from_center = distance_to_center(game,opp_y_position,opp_x_position)
+        player_euclidean_distance_from_center = distance_to_center(game, player_y_position,player_x_position)
+        opponent_euclidean_distance_from_center = distance_to_center(game,opp_y_position,opp_x_position)
 
-        if player_dist_from_center != opponent_dist_from_center:
+        if player_euclidean_distance_from_center != opponent_euclidean_distance_from_center:
 
-            return float(player_dist_from_center - opponent_dist_from_center) / 10.
+            return float(player_euclidean_distance_from_center - opponent_euclidean_distance_from_center) / 10.
 
         else:
 
@@ -233,16 +238,126 @@ def custom_score(game, player):
 
             opponent_moves = game.get_legal_moves(game.get_opponent(player))
 
-            legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,
-                                                                 player_moves)
+            legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,player_moves)
 
             legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
 
-            return float(legitimate_player_moves - legitimate_opp_moves)  / 100.
+            #legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position, player_moves)
+
+            #legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
+
+            if legitimate_player_moves != legitimate_opp_moves:
+                
+                return float(legitimate_player_moves - legitimate_opp_moves)  / 100.
+            
+            else:
+
+                return 0.
+
 
 '''
 
-    
+
+## Remainin Moves + JUMPING SUM RUNS ONLY
+def custom_score_2(game, player):
+
+    """
+        This heuristic value is simply the difference between the player's
+
+        Note: this function should be called from within a Player instance as
+        `self.score()` -- you should not need to call this function directly.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        player : object
+            A player instance in the current game (i.e., an object corresponding to
+            one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+        Returns
+        -------
+        float
+            The heuristic value of the current game state to the specified player.
+            
+            
+            PERFORMANCE
+
+    """
+
+
+    ##If the player is loser... then his score has obviously not imporoved
+    if game.is_loser(player):
+        return float('-inf')
+
+    # If the player is the winnder.. then obviously he gets the max score.
+    if game.is_winner(player):
+        return float('inf')
+
+    ## player Remaining moves
+    player_rem_moves = len(game.get_legal_moves(player))
+
+    # opponent remaining moves
+    opponent_rem_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    if player_rem_moves != opponent_rem_moves:
+
+        return float(player_rem_moves - opponent_rem_moves)
+
+    # what if both players have the same number of remaining moves; who wins?
+    else:
+
+        player_y_position, player_x_position = game.get_player_location(player)
+        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+        player_moves = game.get_legal_moves(player)
+
+        opponent_moves = game.get_legal_moves(game.get_opponent(player))
+
+        #legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,player_moves)
+
+        #legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
+
+        legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position,player_moves)
+
+        legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
+
+
+        if legitimate_player_moves != legitimate_opp_moves :
+
+            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
+
+        else:
+
+            ## SIMPLE DISTANCE
+            ## We employ distance to center to find who can actually win
+            ## why? b/c the person closest to the center has a special advantage of winning the game
+            ## as they have much more space to move to.
+            y_center = int(game.height / 2)
+            x_center = int(game.width / 2)
+
+            player_y_position, player_x_position = game.get_player_location(player)
+            opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+            player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
+
+            opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
+
+            dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
+            ## what if both have the same distance to center, then return 0
+            if player_dist_to_center != opp_dist_to_center:
+
+                return dist_difference
+
+            else: ## it might be nice in future to find another better heurestic to call here!
+
+                return 0.
+
+
+
+
 '''
 ## NUMBER OF REMAINING MOVES
 def custom_score_3(game, player):
@@ -291,102 +406,8 @@ def custom_score_3(game, player):
     return float(player_remaining_moves - opponent_remaining_moves)
 '''
 
-
-
-## SIMPLE DISTANCE OR EUCLIDEAN DISTANCE  +  LEGITIMATE MOVES RUNS
-def custom_score_3(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-        of the given player.
-
-        This heuristic value is simply the difference between the player's
-        SIMPLE 'distance' to center of board as new evaluation. Since player most closest to the center
-        would likely win due to his additional space left for him to maneuver or move.
-
-        Note: this function should be called from within a Player instance as
-        `self.score()` -- you should not need to call this function directly.
-
-        Parameters
-        ----------
-        game : `isolation.Board`
-            An instance of `isolation.Board` encoding the current state of the
-            game (e.g., player locations and blocked cells).
-
-        player : object
-            A player instance in the current game (i.e., an object corresponding to
-            one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-        Returns
-        -------
-        float
-            The heuristic value of the current game state to the specified player.
-    """
-
-
-    ##If the player is loser... then his score has obviously not imporoved
-    if game.is_loser(player):
-
-        return float('-inf')
-
-    #If the player is the winner.. then obviously he gets the max score.
-    if game.is_winner(player):
-
-        return float('inf')
-
-
-    # Simple Distance
-    ## Use Distance to center only as heuristic!
-    y_center = int(game.height / 2)
-    x_center = int(game.width / 2)
-
-    player_y_position, player_x_position = game.get_player_location(player)
-    opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-    player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
-
-    opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
-    
-    ## what if both have the same  simple distance to center, then return 0
-    if player_dist_to_center != opp_dist_to_center:
-
-        return float(player_dist_to_center - opp_dist_to_center) / 10.
-
-    else:
-        # Now both players have the same distance to the center, so we should
-        # employ a heuristic that considers the actual legal number of moves they would make
-        # using the player's current_position, and the number of moves left.
-        # i.e the number of actual legal moves from the remaining moves will
-        # should provide better evaluation and taking into consideration that
-        # by symmetry, some moves are actually the same.. i.e symmetric
-        # along the vertical, horizontal, and diagonals from their current
-        # position.
-        # obviously the player with more(less) actual(legitimate) number of legal moves
-        # wins(loses) the game.
-
-        player_moves = game.get_legal_moves(player)
-
-        opponent_moves = game.get_legal_moves(game.get_opponent(player))
-
-        legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position, player_moves)
-
-        legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
-
-        return float(legitimate_player_moves - legitimate_opp_moves) / 100.
-
-        """
-        ##EUCLIDEAN DISTANCE
-        player_y_position, player_x_position = game.get_player_location(player)
-        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-        player_dist_from_center = distance_to_center(game, player_y_position, player_x_position)
-        opponent_dist_from_center = distance_to_center(game, opp_y_position, opp_x_position)
-
-        if player_dist_from_center != opponent_dist_from_center:
-
-            return float(player_dist_from_center - opponent_dist_from_center)
-        """
-
 '''
-##LEGITIMATE MOVE RUNS
+##LEGITIMATE MOVE RUNS ONLY
 def custom_score_3(game, player):
 
     """
@@ -434,10 +455,72 @@ def custom_score_3(game, player):
 
 '''
 
+'''
+##DISTANCE ONLY
+def custom_score_3(game, player):
 
-## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE + LEGITIMATE MOVE RUNS
-def custom_score_2(game, player):
-    """Calculate the heuristic value of a game state from the point of view
+    """
+      Distance only
+    """
+
+    ##If the player is loser... then his score has obviously not imporoved
+    if game.is_loser(player):
+        return float('-inf')
+
+    # If the player is the winnder.. then obviously he gets the max score.
+    if game.is_winner(player):
+        return float('inf')
+
+
+    ## SIMPLE DISTANCE
+    ## We employ distance to center to find who can actually win
+    ## why? b/c the person closest to the center has a special advantage of winning the game
+    ## as they have much more space to move to.
+
+
+    y_center = int(game.height / 2)
+    x_center = int(game.width / 2)
+
+    player_y_position, player_x_position = game.get_player_location(player)
+    opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+    player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
+
+    opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
+
+    dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
+
+    ## what if both have the same distance to center, then return 0
+    if player_dist_to_center != opp_dist_to_center:
+
+        return dist_difference
+
+    else:
+
+        return 0.
+
+
+    """
+    ##EUCLIDEAN DISTANCE
+
+    player_y_position, player_x_position = game.get_player_location(player)
+    opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+    player_dist_from_center = distance_to_center(game, player_y_position, player_x_position)
+    opponent_dist_from_center = distance_to_center(game, opp_y_position, opp_x_position)
+
+    if player_dist_from_center != opponent_dist_from_center:
+
+        return float(player_dist_from_center - opponent_dist_from_center) /10.
+    """
+
+'''
+
+
+## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE
+def custom_score_3(game, player):
+    """
+    Calculate the heuristic value of a game state from the point of view
     of the given player.
 
     This heuristic value is simply the difference in the number of
@@ -468,23 +551,25 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
 
 
-        Performance:
+        PERFORMANCE:
 
-            *************************
-                Playing Matches
-            *************************
+                        *************************
+                             Playing Matches
+                        *************************
 
-             Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
-                                    Won | Lost   Won | Lost   Won | Lost   Won | Lost
-                1       Random      10  |   0    10  |   0     9  |   1     8  |   2
-                2       MM_Open      6  |   4     7  |   3     9  |   1     6  |   4
-                3      MM_Center     9  |   1     7  |   3     8  |   2     8  |   2
-                4     MM_Improved    5  |   5     5  |   5     8  |   2     5  |   5
-                5       AB_Open      6  |   4     5  |   5     5  |   5     6  |   4
-                6      AB_Center     5  |   5     7  |   3     4  |   6     7  |   3
-                7     AB_Improved    4  |   6     5  |   5     8  |   2     5  |   5
-            --------------------------------------------------------------------------
-                       Win Rate:      64.3%        65.7%        72.9%        64.3%
+                 Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+                    1       Random       7  |   3     9  |   1     8  |   2     8  |   2
+                    2       MM_Open     10  |   0     6  |   4     9  |   1     9  |   1
+                    3      MM_Center     6  |   4     9  |   1     6  |   4     9  |   1
+                    4     MM_Improved    7  |   3     6  |   4     7  |   3     6  |   4
+                    5       AB_Open      8  |   2     6  |   4     6  |   4     5  |   5
+                    6      AB_Center     5  |   5     6  |   4     5  |   5     8  |   2
+                    7     AB_Improved    6  |   4     2  |   8     6  |   4     6  |   4
+                --------------------------------------------------------------------------
+                           Win Rate:      70.0%        62.9%        67.1%        72.9%
+
+                Your ID search forfeited 158.0 games while there were still legal moves available to play.
 
     """
 
@@ -531,140 +616,35 @@ def custom_score_2(game, player):
 
         else:
 
-            # Now both players have the same distance to the center, so we should
-            # employ a heuristic that considers the actual legal number of moves they would make
-            # using the player's current_position, and the number of moves left.
-            # i.e the number of actual legal moves from the remaining moves will
-            # should provide better evaluation and taking into consideration that
-            # by symmetry, some moves are actually the same.. i.e symmetric
-            # along the vertical, horizontal, and diagonals from their current
-            # position.
-            # obviously the player with more(less) actual(legitimate) number of legal moves
-            # wins(loses) the game.
-
-            player_moves = game.get_legal_moves(player)
-
-            opponent_moves = game.get_legal_moves(game.get_opponent(player))
-
-            legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,
-                                                                 player_moves)
-
-            legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
-
-            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
-
-            """
             ##EUCLIDEAN DISTANCE
+            player_euclidean_distance_to_center = distance_to_center(game, player_y_position, player_x_position)
+            opponent_euclidean_distance_to_center = distance_to_center(game, opp_y_position, opp_x_position)
 
-            player_y_position, player_x_position = game.get_player_location(player)
-            opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
 
-            player_dist_from_center = distance_to_center(game, player_y_position, player_x_position)
-            opponent_dist_from_center = distance_to_center(game, opp_y_position, opp_x_position)
+            if player_euclidean_distance_to_center != opponent_euclidean_distance_to_center:
 
-            if player_dist_from_center != opponent_dist_from_center:
+                return float(player_euclidean_distance_to_center - opponent_euclidean_distance_to_center) / 10.
 
-                return float(player_dist_from_center - opponent_dist_from_center) /10.
-            """
-            """
-            player_moves = game.get_legal_moves(player)
+            else:
 
-            opponent_moves = game.get_legal_moves(game.get_opponent(player))
-
-            legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position,
-                                                                 player_moves)
-
-            legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
-
-            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
+                return 0.
             
-            """
-'''
-
-## EUCLIDEAN DISTANCE ONLY
-def custom_score_2(game, player):
-
-    """
-        This heuristic value is simply the difference between the player's
-        EUCLIDEAN distance to center of board as new evaluation
-        dist((x,y), (cx,cy)) = sqrt((x-cx)**2 + (y-cy)**2)
-        Since player most closest to the center
-        would likely win due if only the opponent does not mirror his subsequent moves.
-
-        Note: this function should be called from within a Player instance as
-        `self.score()` -- you should not need to call this function directly.
-
-        Parameters
-        ----------
-        game : `isolation.Board`
-            An instance of `isolation.Board` encoding the current state of the
-            game (e.g., player locations and blocked cells).
-
-        player : object
-            A player instance in the current game (i.e., an object corresponding to
-            one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-        Returns
-        -------
-        float
-            The heuristic value of the current game state to the specified player.
-            
-            
-            PERFORMANCE
-            
-            
-                *************************                         
-                Playing Matches                              
-                *************************                         
-
-                 Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3 
-                                        Won | Lost   Won | Lost   Won | Lost   Won | Lost 
-                    1       Random       6  |   4     7  |   3     9  |   1     8  |   2  
-                    2       MM_Open      9  |   1     6  |   4     6  |   4     6  |   4  
-                    3      MM_Center     8  |   2     9  |   1     7  |   3     5  |   5  
-                    4     MM_Improved    7  |   3     8  |   2     5  |   5     5  |   5  
-                    5       AB_Open      5  |   5     6  |   4     4  |   6     4  |   6  
-                    6      AB_Center     6  |   4     5  |   5     5  |   5     6  |   4  
-                    7     AB_Improved    5  |   5     5  |   5     3  |   7     5  |   5  
-                --------------------------------------------------------------------------
-                           Win Rate:      65.7%        65.7%        55.7%        55.7%    
-                
-                Your ID search forfeited 169.0 games while there were still legal moves available to play.
-
-
-    """
-
-    ##If the player is loser... then his score has obviously not imporoved
-    if game.is_loser(player):
-        return float('-inf')
-
-    # If the player is the winnder.. then obviously he gets the max score.
-    if game.is_winner(player):
-        return float('inf')
-
-
-    player_y_position, player_x_position = game.get_player_location(player)
-    opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-    player_dist_from_center = distance_to_center(game, player_y_position, player_x_position)
-    opponent_dist_from_center = distance_to_center(game, opp_y_position, opp_x_position)
-
-    if player_dist_from_center != opponent_dist_from_center:
-
-        return float(player_dist_from_center - opponent_dist_from_center)
-
-    else:
-
-        return 0.
-'''
 
 
 
 
+
+#
+# Utility Functions
+#
 
 def distance_to_center(game, y_position, x_position):
     """
     Computes the distance to distance from the current player's postion.
+    EUCLIDEAN distance to center of board as new evaluation
+    dist((x,y), (cx,cy)) = sqrt((x-cx)**2 + (y-cy)**2)
+    since player most closest to the center
+    would likely win due if only the opponent does not mirror his subsequent moves.
 
     :param self:
     :param y_position:
