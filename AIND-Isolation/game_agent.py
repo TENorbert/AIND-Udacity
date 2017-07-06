@@ -14,11 +14,30 @@ class SearchTimeout(Exception):
 
 
 
-
 ## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE + LEGITIMATE MOVES
-def custom_score(game, player):
+def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
+    Heuristic combines:
+        1) The number of player + opponent moves
+        2) The distance(Simple)  measure to capture positional advantage
+        3) Sum of Maximum moves over Minimal number of remaining squares.
+
+
+    This heuristic value is simply the difference in the number of
+    player's remaining moves and the opponent's remaining moves.
+    The player wins(loss) if they have fewer(more) moves left compared to the opponent.
+
+    If player and opponent have the same number of moves left
+    use simple distance to center of board as additional evaluation.
+    and if the players have the same simple distance to center of board,
+    the their Sum of Maximum moves over Minimal number of remaining squares  is used.
+
+    Since the simple distance factor of the heuristic function is secondary in influence to the
+    number of remaining moves of a player, we devide by 10.
+    and since the Sum of Maximum moves over Minimal number of remaining squares is tetiary
+    overall effect to the heuristic function, we devide by 100.
+
 
     This should be the best heuristic function for your project submission.
 
@@ -41,7 +60,7 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
 
 
-        PERFORMANCE::
+        PERFORMANCE:
 
                         *************************
                              Playing Matches
@@ -49,17 +68,17 @@ def custom_score(game, player):
 
          Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
                                 Won | Lost   Won | Lost   Won | Lost   Won | Lost
-            1       Random       8  |   2    10  |   0     9  |   1     8  |   2
-            2       MM_Open      6  |   4     8  |   2     8  |   2     6  |   4
-            3      MM_Center     8  |   2     6  |   4     7  |   3     8  |   2
-            4     MM_Improved    8  |   2     6  |   4     6  |   4     8  |   2
-            5       AB_Open      7  |   3     6  |   4     7  |   3     7  |   3
-            6      AB_Center     5  |   5     6  |   4     6  |   4     6  |   4
-            7     AB_Improved    5  |   5     4  |   6     6  |   4     4  |   6
+            1       Random       8  |   2     8  |   2     7  |   3     8  |   2
+            2       MM_Open      8  |   2     6  |   4     7  |   3     8  |   2
+            3      MM_Center     8  |   2     9  |   1     9  |   1     6  |   4
+            4     MM_Improved    5  |   5     8  |   2     4  |   6     7  |   3
+            5       AB_Open      7  |   3     6  |   4     5  |   5     5  |   5
+            6      AB_Center     4  |   6     8  |   2     4  |   6     4  |   6
+            7     AB_Improved    7  |   3     6  |   4     4  |   6     3  |   7
         --------------------------------------------------------------------------
-                   Win Rate:      67.1%        65.7%        70.0%        67.1%
+                   Win Rate:      67.1%        72.9%        57.1%        58.6%
 
-        Your ID search forfeited 160.0 games while there were still legal moves available to play.
+        Your ID search forfeited 164.0 games while there were still legal moves available to play
 
     """
 
@@ -123,13 +142,9 @@ def custom_score(game, player):
 
             opponent_moves = game.get_legal_moves(game.get_opponent(player))
 
-            #legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position, player_moves)
+            legitimate_player_moves = sum_max_rem_moves_number(game, player_x_position, player_y_position, player_moves)
 
-            #legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
-
-            legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position, player_moves)
-
-            legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
+            legitimate_opp_moves = sum_max_rem_moves_number(game, opp_x_position, opp_y_position, opponent_moves)
 
             if legitimate_player_moves != legitimate_opp_moves:
 
@@ -138,7 +153,256 @@ def custom_score(game, player):
             else:
 
                 return 0.
+
+
+
+## Remainin Moves + JUMPING SUM RUNS ONLY
+def custom_score_2(game, player):
+
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+        This heuristic combines:
+            1) Number of Player/Opponent remaining moves!
+            2) Sum of Maximum moves over Minimal number of remaining squares
+            3) The distance(Simple) measure  to capture positional advantage
+
+        This heuristic value is simply the difference in the number of
+        player's remaining moves and the opponent's remaining moves.
+        The player wins(loss) if they have fewer(more) moves left compared to the opponent.
+
+        If player and opponent have the same number of moves left
+        use Sum of Maximum moves over Minimal number of remaining squares  as new evaluation.
+        and if the players have the same Sum of Maximum moves over Minimal number of remaining squares, the their simple distance to center of board is used.
+
+        Since the distance factor of the heuristic function is secondary in influence to the
+        number of remaining moves of a player, we devide by 10.
+        and since the Sum of Maximum moves over Minimal number of remaining squares is tetiary
+        overall effect to the heuristic function, we devide by 100.
+
+
+        Note: this function should be called from within a Player instance as
+        `self.score()` -- you should not need to call this function directly.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        player : object
+            A player instance in the current game (i.e., an object corresponding to
+            one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+        Returns
+        -------
+        float
+            The heuristic value of the current game state to the specified player.
             
+            
+            PERFORMANCE
+
+
+                        *************************
+                             Playing Matches
+                        *************************
+
+             Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                                    Won | Lost   Won | Lost   Won | Lost   Won | Lost
+                1       Random       9  |   1     8  |   2    10  |   0     8  |   2
+                2       MM_Open      6  |   4     6  |   4     5  |   5     8  |   2
+                3      MM_Center     7  |   3     9  |   1     5  |   5     9  |   1
+                4     MM_Improved    7  |   3     8  |   2     6  |   4     6  |   4
+                5       AB_Open      6  |   4     4  |   6     9  |   1     5  |   5
+                6      AB_Center     5  |   5     4  |   6     9  |   1     3  |   7
+                7     AB_Improved    6  |   4     5  |   5     7  |   3     5  |   5
+            --------------------------------------------------------------------------
+                       Win Rate:      65.7%        62.9%        72.9%        62.9%
+
+            Your ID search forfeited 163.0 games while there were still legal moves available to play.
+
+    """
+
+
+    ##If the player is loser... then his score has obviously not imporoved
+    if game.is_loser(player):
+        return float('-inf')
+
+    # If the player is the winnder.. then obviously he gets the max score.
+    if game.is_winner(player):
+        return float('inf')
+
+    ## player Remaining moves
+    player_rem_moves = len(game.get_legal_moves(player))
+
+    # opponent remaining moves
+    opponent_rem_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    if player_rem_moves != opponent_rem_moves:
+
+        return float(player_rem_moves - opponent_rem_moves)
+
+    # what if both players have the same number of remaining moves; who wins?
+    else:
+
+        player_y_position, player_x_position = game.get_player_location(player)
+        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+        player_moves = game.get_legal_moves(player)
+
+        opponent_moves = game.get_legal_moves(game.get_opponent(player))
+
+        legitimate_player_moves = sum_max_rem_moves_number(game, player_x_position, player_y_position,player_moves)
+
+        legitimate_opp_moves = sum_max_rem_moves_number(game, opp_x_position, opp_y_position, opponent_moves)
+
+
+        if legitimate_player_moves != legitimate_opp_moves :
+
+            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
+
+        else:
+
+            ## SIMPLE DISTANCE
+            ## We employ distance to center to find who can actually win
+            ## why? b/c the person closest to the center has a special advantage of winning the game
+            ## as they have much more space to move to.
+            y_center = int(game.height / 2)
+            x_center = int(game.width / 2)
+
+            player_y_position, player_x_position = game.get_player_location(player)
+            opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+            player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
+
+            opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
+
+            dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
+            ## what if both have the same distance to center, then return 0
+            if player_dist_to_center != opp_dist_to_center:
+
+                return dist_difference
+
+            else: ## it might be nice in future to find another better heurestic to call here!
+
+                return 0.
+
+
+## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE
+def custom_score(game, player):
+    """
+    Calculate the heuristic value of a game state from the point of view
+    of the given player.
+        This heuristic combines:
+        1) Number of Player/Opponent remaining moves!
+        2) The Simple distance measure  to capture positional advantage
+        3) The Euclidean distance measure  to capture positional (L-shaped) advantage
+
+
+    This heuristic value is simply the difference in the number of
+    player's remaining moves and the opponent's remaining moves.
+    The player wins(loss) if they have fewer(more) moves left compared to the opponent.
+
+    If player and opponent have the same number of moves left
+    use their simple distance to center of board as new evaluation.
+    and if the players have the same simple distance, the Euclidean distance is used.
+    Since the distance factor of the heuristic function is secondary in influence to the
+    number of remaining moves of a player...we devide by 10.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+
+
+        PERFORMANCE:
+
+                        *************************
+                             Playing Matches
+                        *************************
+
+                 Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+                    1       Random       7  |   3     9  |   1     8  |   2     8  |   2
+                    2       MM_Open     10  |   0     6  |   4     9  |   1     9  |   1
+                    3      MM_Center     6  |   4     9  |   1     6  |   4     9  |   1
+                    4     MM_Improved    7  |   3     6  |   4     7  |   3     6  |   4
+                    5       AB_Open      8  |   2     6  |   4     6  |   4     5  |   5
+                    6      AB_Center     5  |   5     6  |   4     5  |   5     8  |   2
+                    7     AB_Improved    6  |   4     2  |   8     6  |   4     6  |   4
+                --------------------------------------------------------------------------
+                           Win Rate:      70.0%        62.9%        67.1%        72.9%
+
+                Your ID search forfeited 158.0 games while there were still legal moves available to play.
+
+    """
+
+    ##If the player is loser... then his score has obviously not imporoved
+    if game.is_loser(player):
+        return float('-inf')
+
+    # If the player is the winner.. then obviously he gets the max score.
+    if game.is_winner(player):
+        return float('inf')
+
+    ## player Remaining moves
+    player_rem_moves = len(game.get_legal_moves(player))
+
+    # opponent remaining moves
+    opponent_rem_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    if player_rem_moves != opponent_rem_moves:
+
+        return float(player_rem_moves - opponent_rem_moves)
+
+    # what if both players have the same number of remaining moves; who wins?
+    else:
+        ## SIMPLE DISTANCE
+        ## We employ distance to center to find who can actually win
+        ## why? b/c the person closest to the center has a special advantage of winning the game
+        ## as they have much more space to move to.
+        y_center = int(game.height / 2)
+        x_center = int(game.width / 2)
+
+        player_y_position, player_x_position = game.get_player_location(player)
+        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
+
+        player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
+
+        opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
+
+        dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
+
+        ## what if both have the same distance to center, then return 0
+        if player_dist_to_center != opp_dist_to_center:
+
+            return dist_difference
+
+        else:
+
+            ##EUCLIDEAN DISTANCE
+            player_euclidean_distance_to_center = distance_to_center(game, player_y_position, player_x_position)
+            opponent_euclidean_distance_to_center = distance_to_center(game, opp_y_position, opp_x_position)
+
+            if player_euclidean_distance_to_center != opponent_euclidean_distance_to_center:
+
+                return float(player_euclidean_distance_to_center - opponent_euclidean_distance_to_center) / 10.
+
+            else:
+
+                return 0.
 
 
 
@@ -147,8 +411,29 @@ def custom_score(game, player):
 ## NUMBER OF REMAINING MOVES + EUCLIDEAN DISTANCE + LEGITIMATE MOVE RUNS
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
-        of the given player.
+    of the given player.
+    Heuristic combines:
+        1) The number of player + opponent moves
+        2) The distance(Simple)  measure to capture positional advantage
+        3) Sum of Maximum moves over Minimal number of remaining squares.
 
+
+        This heuristic value is simply the difference in the number of
+        player's remaining moves and the opponent's remaining moves.
+        The player wins(loss) if they have fewer(more) moves left compared to the opponent.
+
+        If player and opponent have the same number of moves left
+        use Euclidean distance to center of board as additional evaluation.
+        and if the players have the same Euclidean distance to center of board,
+        the their Sum of Maximum moves over Minimal number of remaining squares  is used.
+
+        Since the Euclidean distance factor of the heuristic function is secondary in influence to the
+        number of remaining moves of a player, we devide by 10.
+        and since the Sum of Maximum moves over Minimal number of remaining squares is tetiary
+        overall effect to the heuristic function, we devide by 100.
+
+
+        This should be the best heuristic function for your project submission.
         Note: this function should be called from within a Player instance as
         `self.score()` -- you should not need to call this function directly.
 
@@ -169,23 +454,26 @@ def custom_score(game, player):
 
 
 
-                       *************************
-                             Playing Matches
-                        *************************
+        PERFORMANCE:
 
-         Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
-                                Won | Lost   Won | Lost   Won | Lost   Won | Lost
-            1       Random       8  |   2     8  |   2     7  |   3     8  |   2
-            2       MM_Open      8  |   2     6  |   4     7  |   3     8  |   2
-            3      MM_Center     8  |   2     9  |   1     9  |   1     6  |   4
-            4     MM_Improved    5  |   5     8  |   2     4  |   6     7  |   3
-            5       AB_Open      7  |   3     6  |   4     5  |   5     5  |   5
-            6      AB_Center     4  |   6     8  |   2     4  |   6     4  |   6
-            7     AB_Improved    7  |   3     6  |   4     4  |   6     3  |   7
-        --------------------------------------------------------------------------
-                   Win Rate:      67.1%        72.9%        57.1%        58.6%
 
-        Your ID search forfeited 164.0 games while there were still legal moves available to play
+                        *************************                         
+                             Playing Matches                              
+                        *************************                         
+
+             Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3 
+                                    Won | Lost   Won | Lost   Won | Lost   Won | Lost 
+                1       Random       9  |   1     6  |   4     9  |   1     8  |   2  
+                2       MM_Open      6  |   4     6  |   4     6  |   4     7  |   3  
+                3      MM_Center     7  |   3     9  |   1     6  |   4     9  |   1  
+                4     MM_Improved    6  |   4     7  |   3     8  |   2     8  |   2  
+                5       AB_Open      6  |   4     4  |   6     6  |   4     6  |   4  
+                6      AB_Center     7  |   3     6  |   4     6  |   4     5  |   5  
+                7     AB_Improved    7  |   3     4  |   6     6  |   4     8  |   2  
+            --------------------------------------------------------------------------
+                       Win Rate:      68.6%        60.0%        67.1%        72.9%    
+
+            Your ID search forfeited 163.0 games while there were still legal moves available to play.
 
     """
 
@@ -238,125 +526,21 @@ def custom_score(game, player):
 
             opponent_moves = game.get_legal_moves(game.get_opponent(player))
 
-            legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,player_moves)
 
-            legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
+            legitimate_player_moves = sum_max_rem_moves_number(game, player_x_position, player_y_position, player_moves)
 
-            #legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position, player_moves)
-
-            #legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
+            legitimate_opp_moves = sum_max_rem_moves_number(game, opp_x_position, opp_y_position, opponent_moves)
 
             if legitimate_player_moves != legitimate_opp_moves:
-                
+
                 return float(legitimate_player_moves - legitimate_opp_moves)  / 100.
-            
+
             else:
 
                 return 0.
 
 
 '''
-
-
-## Remainin Moves + JUMPING SUM RUNS ONLY
-def custom_score_2(game, player):
-
-    """
-        This heuristic value is simply the difference between the player's
-
-        Note: this function should be called from within a Player instance as
-        `self.score()` -- you should not need to call this function directly.
-
-        Parameters
-        ----------
-        game : `isolation.Board`
-            An instance of `isolation.Board` encoding the current state of the
-            game (e.g., player locations and blocked cells).
-
-        player : object
-            A player instance in the current game (i.e., an object corresponding to
-            one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-        Returns
-        -------
-        float
-            The heuristic value of the current game state to the specified player.
-            
-            
-            PERFORMANCE
-
-    """
-
-
-    ##If the player is loser... then his score has obviously not imporoved
-    if game.is_loser(player):
-        return float('-inf')
-
-    # If the player is the winnder.. then obviously he gets the max score.
-    if game.is_winner(player):
-        return float('inf')
-
-    ## player Remaining moves
-    player_rem_moves = len(game.get_legal_moves(player))
-
-    # opponent remaining moves
-    opponent_rem_moves = len(game.get_legal_moves(game.get_opponent(player)))
-
-    if player_rem_moves != opponent_rem_moves:
-
-        return float(player_rem_moves - opponent_rem_moves)
-
-    # what if both players have the same number of remaining moves; who wins?
-    else:
-
-        player_y_position, player_x_position = game.get_player_location(player)
-        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-        player_moves = game.get_legal_moves(player)
-
-        opponent_moves = game.get_legal_moves(game.get_opponent(player))
-
-        #legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position,player_moves)
-
-        #legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
-
-        legitimate_player_moves = get_sum_jumping_runs(game, player_x_position, player_y_position,player_moves)
-
-        legitimate_opp_moves = get_sum_jumping_runs(game, opp_x_position, opp_y_position, opponent_moves)
-
-
-        if legitimate_player_moves != legitimate_opp_moves :
-
-            return float(legitimate_player_moves - legitimate_opp_moves) / 100.
-
-        else:
-
-            ## SIMPLE DISTANCE
-            ## We employ distance to center to find who can actually win
-            ## why? b/c the person closest to the center has a special advantage of winning the game
-            ## as they have much more space to move to.
-            y_center = int(game.height / 2)
-            x_center = int(game.width / 2)
-
-            player_y_position, player_x_position = game.get_player_location(player)
-            opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-            player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
-
-            opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
-
-            dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
-            ## what if both have the same distance to center, then return 0
-            if player_dist_to_center != opp_dist_to_center:
-
-                return dist_difference
-
-            else: ## it might be nice in future to find another better heurestic to call here!
-
-                return 0.
-
-
-
 
 '''
 ## NUMBER OF REMAINING MOVES
@@ -447,9 +631,9 @@ def custom_score_3(game, player):
 
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
 
-    legitimate_player_moves = get_legitimate_legal_moves(game, player_x_position, player_y_position, player_moves)
+    legitimate_player_moves = sum_max_rem_moves_number(game, player_x_position, player_y_position, player_moves)
 
-    legitimate_opp_moves = get_legitimate_legal_moves(game, opp_x_position, opp_y_position, opponent_moves)
+    legitimate_opp_moves = sum_max_rem_moves_number(game, opp_x_position, opp_y_position, opponent_moves)
 
     return float(legitimate_player_moves - legitimate_opp_moves) / 100.
 
@@ -517,126 +701,13 @@ def custom_score_3(game, player):
 '''
 
 
-## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE
-def custom_score_3(game, player):
-    """
-    Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    This heuristic value is simply the difference in the number of
-    player's remaining moves and the opponent's remaining moves.
-    The player wins(loss) if they have fewer(more) moves left compared to the opponent.
-
-    if player and opponent have the same number of moves left
-    use their simple distance to center of board as new evaluation.
-    Since player most closest to the center
-    would likely win due to his additional space left for him to maneuver or move.
-
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-
-
-        PERFORMANCE:
-
-                        *************************
-                             Playing Matches
-                        *************************
-
-                 Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
-                                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
-                    1       Random       7  |   3     9  |   1     8  |   2     8  |   2
-                    2       MM_Open     10  |   0     6  |   4     9  |   1     9  |   1
-                    3      MM_Center     6  |   4     9  |   1     6  |   4     9  |   1
-                    4     MM_Improved    7  |   3     6  |   4     7  |   3     6  |   4
-                    5       AB_Open      8  |   2     6  |   4     6  |   4     5  |   5
-                    6      AB_Center     5  |   5     6  |   4     5  |   5     8  |   2
-                    7     AB_Improved    6  |   4     2  |   8     6  |   4     6  |   4
-                --------------------------------------------------------------------------
-                           Win Rate:      70.0%        62.9%        67.1%        72.9%
-
-                Your ID search forfeited 158.0 games while there were still legal moves available to play.
-
-    """
-
-    ##If the player is loser... then his score has obviously not imporoved
-    if game.is_loser(player):
-        return float('-inf')
-
-    # If the player is the winner.. then obviously he gets the max score.
-    if game.is_winner(player):
-        return float('inf')
-
-    ## player Remaining moves
-    player_rem_moves = len(game.get_legal_moves(player))
-
-    # opponent remaining moves
-    opponent_rem_moves = len(game.get_legal_moves(game.get_opponent(player)))
-
-    if player_rem_moves != opponent_rem_moves:
-
-        return float(player_rem_moves - opponent_rem_moves)
-
-    # what if both players have the same number of remaining moves; who wins?
-    else:
-        ## SIMPLE DISTANCE
-        ## We employ distance to center to find who can actually win
-        ## why? b/c the person closest to the center has a special advantage of winning the game
-        ## as they have much more space to move to.
-        y_center = int(game.height / 2)
-        x_center = int(game.width / 2)
-
-        player_y_position, player_x_position = game.get_player_location(player)
-        opp_y_position, opp_x_position = game.get_player_location(game.get_opponent(player))
-
-        player_dist_to_center = abs(player_y_position - y_center) + abs(player_x_position - x_center)
-
-        opp_dist_to_center = abs(opp_y_position - y_center) + abs(opp_x_position - x_center)
-
-        dist_difference = float(player_dist_to_center - opp_dist_to_center) / 10.
-
-        ## what if both have the same distance to center, then return 0
-        if player_dist_to_center != opp_dist_to_center:
-
-            return dist_difference
-
-        else:
-
-            ##EUCLIDEAN DISTANCE
-            player_euclidean_distance_to_center = distance_to_center(game, player_y_position, player_x_position)
-            opponent_euclidean_distance_to_center = distance_to_center(game, opp_y_position, opp_x_position)
-
-
-            if player_euclidean_distance_to_center != opponent_euclidean_distance_to_center:
-
-                return float(player_euclidean_distance_to_center - opponent_euclidean_distance_to_center) / 10.
-
-            else:
-
-                return 0.
-            
 
 
 
 
-
-#
-# Utility Functions
-#
+##################################
+## Utility Functions            ##
+##################################
 
 def distance_to_center(game, y_position, x_position):
     """
@@ -665,9 +736,11 @@ def distance_to_center(game, y_position, x_position):
 
 
 
-def get_legitimate_legal_moves(game, player_y_pos, player_x_pos, moves):
-    """This function measures the longest run of jumping moves that can be performed inside the 3x3 squares
-    defined by a starting position and EACH of its legal moves left. The longest run one can hope to reach is 7.
+def sum_max_rem_moves_number(game, player_y_pos, player_x_pos, moves):
+    """This function measures the longest run of jumping moves that
+    can be performed inside the 3x3 squares
+    defined by a starting position and each of its legal moves
+    left. The longest run one can hope to reach is 7.
 
     Parameters
     ----------
@@ -684,390 +757,11 @@ def get_legitimate_legal_moves(game, player_y_pos, player_x_pos, moves):
     Returns
     -------
     int
-        The longest run found.
+        The sum L-shpaed remaining moves over minimal squares found.
     """
 
-    # ********************** NOTE TO THE REVIEWER ***************************
-    # Portions of our heuristics were flagged as needing a rewrite (use for loops, move redundant code in a function)
-    # It is our contention that FUNCTION INLINING and LOOP UNROLLING are CRITICAL to the success of this heuristic.
-    # It is BECAUSE we don't use functions and for loops that our code can explore more branches before timeout.
-    # Using functions (even when passing parameters by reference) and setting up for loops INCREASE OVERHEAD.
-    # How do we know this makes a difference here? Because we tried both approaches!
-    # Please keep in mind that an increase in code size can be irrelevant when it translates in a significant speed win.
-    # Thank you.
-    # Respectfully, Phil Ferriere
 
-    longest_player_run = 1
-    for move_y, move_x in moves:
-        if longest_player_run == 7:
-            break
-        player_run = 1
-        if move_y == player_y_pos + 1 and move_x == player_x_pos + 2:  # Pos 1
-            # Start the run going East-South
-            # +---+---+---+
-            # | 5 | 2 | 7 |
-            # +---+---+---+
-            # | p | x | 4 |
-            # +---+---+---+
-            # | 3 | 6 | 1 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos + 2)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos - 1 and move_x == player_x_pos + 2:  # Pos 1
-            # Start the run going East-North
-            # +---+---+---+
-            # | 3 | 6 | 1 |
-            # +---+---+---+
-            # | p | x | 4 |
-            # +---+---+---+
-            # | 5 | 2 | 7 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos + 2)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos - 2 and move_x == player_x_pos + 1:  # Pos 1
-            # Start the run going North-East
-            # +---+---+---+
-            # | 6 | 1 | 4 |
-            # +---+---+---+
-            # | 3 | x | 7 |
-            # +---+---+---+
-            # | p | 5 | 2 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 2, player_x_pos + 2)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 2, player_x_pos)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos + 2)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos - 2 and move_x == player_x_pos - 1:  # Pos 1
-            # Start the run going North-West
-            # +---+---+---+
-            # | 1 | 4 | 7 |
-            # +---+---+---+
-            # | 6 | x | 2 |
-            # +---+---+---+
-            # | 3 | p | 5 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 2, player_x_pos)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 2, player_x_pos + 1)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos - 1 and move_x == player_x_pos - 2:  # Pos 1
-            # Start the run going West-North
-            # +---+---+---+
-            # | 1 | 6 | 3 |
-            # +---+---+---+
-            # | 4 | x | p |
-            # +---+---+---+
-            # | 7 | 2 | 5 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos - 2)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos - 2)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos + 1 and move_x == player_x_pos - 2:  # Pos 1
-            # Start the run going West-South
-            # +---+---+---+
-            # | 7 | 2 | 5 |
-            # +---+---+---+
-            # | 4 | x | p |
-            # +---+---+---+
-            # | 1 | 6 | 3 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos - 2)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos - 1, player_x_pos - 2)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos + 2 and move_x == player_x_pos - 1:  # Pos 1
-            # Start the run going South-West
-            # +---+---+---+
-            # | 3 | p | 5 |
-            # +---+---+---+
-            # | 6 | x | 2 |
-            # +---+---+---+
-            # | 1 | 4 | 7 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 2, player_x_pos)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 2, player_x_pos + 1)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-        if move_y == player_y_pos + 2 and move_x == player_x_pos + 1:  # Pos 1
-            # Start the run going South-East
-            # +---+---+---+
-            # | 5 | p | 3 |
-            # +---+---+---+
-            # | 2 | x | 6 |
-            # +---+---+---+
-            # | 7 | 4 | 1 |
-            # +---+---+---+
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 2
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 3
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 2, player_x_pos)):  # Pos 4
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 5
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 6
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                player_run += 1
-            if not game.move_is_legal((player_y_pos + 2, player_x_pos - 1)):  # Pos 7
-                longest_player_run = max(longest_player_run, player_run)
-                continue
-            else:
-                longest_player_run = 7  # max(longest_player_run, player_run + 1)
-                break
-
-    return longest_player_run
-
-
-
-
-def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
-    """This function measures the longest run of jumping moves that can be performed inside the 3x3 squares
-    defined by a starting position and each of its legal moves left. The longest run one can hope to reach is 7.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player_y_pos, player_x_pos : int, int
-        The player's position to evaluate based on its longest jumping run.
-
-    moves : `list` of legal moves for 'player'
-        List` of legal moves for 'player'
-
-    Returns
-    -------
-    int
-        The longest run found.
-    """
-
-    # ********************** NOTE TO THE REVIEWER ***************************
-    # The code below was flagged as needing a revrite (use for loops, move redundant code in a function)
-    # It is our contention that FUNCTION INLINING and LOOP UNROLLING are CRITICAL to the success of this heuristic.
-    # It is BECAUSE we don't use functions and for loops that our code can explore more branches before timeout.
-    # Using functions (even when passing parameters by reference) and setting up for loops INCREASE OVERHEAD.
-    # How do we know this makes a different here? Because we tried both ways!
-    # Please keep in mind that an increase in code size can be irrelevant when it translates in a significant speed win.
-    # Thank you.
-    # Respectfully, Phil Ferriere
-
-    sum_jumping_runs = 0
+    sum_max_moves_rem = 0
     for move_y, move_x in moves:
         if move_y == player_y_pos + 1 and move_x == player_x_pos + 2:  # Pos 1
             # Start the run going East-South
@@ -1081,27 +775,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos + 2)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos - 1 and move_x == player_x_pos + 2:  # Pos 1
@@ -1116,27 +810,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos + 2)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos - 2 and move_x == player_x_pos + 1:  # Pos 1
@@ -1151,27 +845,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos, player_x_pos + 2)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 2, player_x_pos + 2)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 2, player_x_pos)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos + 2)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos - 2 and move_x == player_x_pos - 1:  # Pos 1
@@ -1186,27 +880,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos - 1, player_x_pos + 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 2, player_x_pos)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 2, player_x_pos + 1)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos - 1 and move_x == player_x_pos - 2:  # Pos 1
@@ -1221,27 +915,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos - 2)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos - 2)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos + 1 and move_x == player_x_pos - 2:  # Pos 1
@@ -1256,27 +950,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos - 1, player_x_pos - 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos - 2)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos - 1, player_x_pos - 2)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos + 2 and move_x == player_x_pos - 1:  # Pos 1
@@ -1291,27 +985,27 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 2, player_x_pos)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 2, player_x_pos + 1)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
         if move_y == player_y_pos + 2 and move_x == player_x_pos + 1:  # Pos 1
@@ -1326,90 +1020,38 @@ def get_sum_jumping_runs(game, player_y_pos, player_x_pos, moves):
             if not game.move_is_legal((player_y_pos + 1, player_x_pos - 1)):  # Pos 2
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos + 1)):  # Pos 3
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 2, player_x_pos)):  # Pos 4
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos, player_x_pos - 1)):  # Pos 5
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 1, player_x_pos + 1)):  # Pos 6
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
             if not game.move_is_legal((player_y_pos + 2, player_x_pos - 1)):  # Pos 7
                 continue
             else:
-                sum_jumping_runs += 1
+                sum_max_moves_rem += 1
                 continue
 
-    return sum_jumping_runs
-
-'''
-def get_legitimate_legal_moves(game, player_x_position, player_y_position, player_remaining_moves):
-    """
-
-    :param game:
-        game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    :param player_x_position:
-         x cordinate of the position of player at a given instance in the current game
-
-    :param player_y_position:
-         y cordinate of the position of player at a given instance in the current game
-
-         Note: (x,y) = player position
-
-    :param player_remaining_moves:
-         Number of remaining moves of player.
-
-    :return: float
-           Legitimate number of unique moves player is capable of making if the game
-           were to unfold.
-    """
-
-    ## since player can always make at least a single move despite symmetry in any direction
-
-    number_of_legitimate_player_moves = 1;
-
-    for move_in_y, move_in_x in player_remaining_moves:
-
-        #End loop once the player has already exhausted the logest moves they can make
-        # which is 7 for a 7x7 board.
-        if number_of_legitimate_player_moves == 7:
-
-             break
-
-        number_player_moves = 1
-
-        if move_in_y == player_y_position + 1 and move_in_x == player_x_position + 2:
-
-            if not game.move_is_legal((player_y_position - 1, player_x_position + 1 )):
-
-                number_of_legitimate_player_moves = max(number_of_legitimate_player_moves, number_player_moves)
-
-                continue
-
-            else:
-
-                number_player_moves += 1
+    return sum_max_moves_rem
 
 
 
-    return  number_of_legitimate_player_moves
-
-'''
-
-
-
+###################################################################
+###                                                             ###
+###      Isolation Game                                         ###
+###                                                             ###
+###################################################################
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
