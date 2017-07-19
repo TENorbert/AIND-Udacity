@@ -13,7 +13,6 @@ class SearchTimeout(Exception):
     pass
 
 
-'''
 ## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -138,7 +137,6 @@ def custom_score(game, player):
                 return 0.
 
 '''
-
 ## Weighted delta Heuristic
 def custom_score(game, player):
     
@@ -163,7 +161,7 @@ def custom_score(game, player):
 
     # return weighted delta of available moves
     return float(own_moves - (w * opp_moves))
-
+'''
 
 
 
