@@ -13,7 +13,7 @@ class SearchTimeout(Exception):
     pass
 
 
-
+'''
 ## NUMBER OF REMAINING MOVES + SIMPLE DISTANCE
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -136,6 +136,36 @@ def custom_score(game, player):
             else:
 
                 return 0.
+
+'''
+
+## Weighted delta Heuristic
+def custom_score(game, player):
+    
+    
+    ###If the player is loser... then his score has obviously not imporoved
+    if game.is_loser(player):
+        return float('-inf')
+
+    # If the player is the winnder.. then obviously he gets the max score.
+    if game.is_winner(player):
+        return float('inf')
+        
+    # get current move count
+    move_count = game.move_count
+
+    # count number of moves available
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    # calculate weight
+    w = 10 / (move_count + 1)
+
+    # return weighted delta of available moves
+    return float(own_moves - (w * opp_moves))
+
+
+
 
 
 
@@ -409,6 +439,8 @@ def custom_score_3(game, player):
             else:
 
                 return 0.
+
+
 
 
 
