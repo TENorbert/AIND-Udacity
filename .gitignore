@@ -1,0 +1,6 @@
+## ignore the following files
+*.pdf
+*.pyc
+*.swp
+*.doc
+*.data
