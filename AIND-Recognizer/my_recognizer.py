@@ -19,7 +19,7 @@ def recognize(models: dict, test_set: SinglesData):
    """
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     probabilities = []exit
-    
+
     guesses = []
     # TODO implement the recognizer
     # return probabilities, guesses
