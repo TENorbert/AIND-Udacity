@@ -164,7 +164,7 @@ class SelectorDIC(ModelSelector):
                     try:
                         sumLogP += candidate_model.score(newX, newLength)
                     except:
-                        print("DIC SumLogP not computed for word ={}".format(word))
+                        print("DIC SumLogP not computed for word = {}".format(word))
                         pass
             #Now that we have the sum and M for all except our word, lets compute the DIC value
             try:
