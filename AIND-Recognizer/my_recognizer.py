@@ -18,9 +18,33 @@ def recognize(models: dict, test_set: SinglesData):
            ['WORDGUESS0', 'WORDGUESS1', 'WORDGUESS2',...]
    """
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    probabilities = []exit
-
+    probabilities = []
     guesses = []
     # TODO implement the recognizer
+    # get all words for comparing
+    words = models.keys()
+    # get all words that we are going to test our model on,
+    # we would like to have the biggest prob on word which is also our word from words set
+    all_words = test_set.get_all_Xlengths()
+    # run through all words
+    for _, test_data in all_words.items():
+        # getting data for testing word
+        X, lengs = test_data
+        our_dics = {}
+        # running through all words that we use for testing accuracy of our HMMs
+        for word in words:
+            model = models[word]
+            try:
+                #Get loglikelihood for each model
+                our_dics[word] = model.score(X, lengs)
+            except:
+                pass
+        # this is list of all words tested for each word in our words list
+        probabilities.append(our_dics)
+        
+    # getting word which has the biggest probability in each dict.
+    # we want the key word to be the same as our word which was predicted by HMM
+    guesses = [max(prob, key=prob.get) for prob in probabilities]
     # return probabilities, guesses
-    raise NotImplementedError
+    return probabilities, guesses
+    #raise NotImplementedError
