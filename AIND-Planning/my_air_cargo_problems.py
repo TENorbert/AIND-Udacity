@@ -210,9 +210,15 @@ class AirCargoProblem(Problem):
         conditions by ignoring the preconditions required for an action to be
         executed.
         """
-        # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
-        count = 0
-        return count
+        ## implement from (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
+        actions_count = 0
+        kb = PropKB()
+        kb.tell(decode_state(node.state, self.state_map).pos_sentence())
+        kb_clauses = kb.clauses
+        for clause in self.goal:
+            if clause not in kb_clauses:
+                actions_count += 1
+        return actions_count
 
 
 
