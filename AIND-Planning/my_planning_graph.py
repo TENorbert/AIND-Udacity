@@ -97,7 +97,7 @@ class PgNode_s(PgNode):
                 self.symbol == other.symbol)
 
     def __not_eq__(self, other):
-        """equality test for nodes - compares only the literal for equality
+        """Inequality test for nodes - compares only the literal for Inequality
 
         :param other: PgNode_s
         :return: bool
